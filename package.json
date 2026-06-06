@@ -1,0 +1,10 @@
+{
+  "name": "carebridge",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CareBridge 康橋 — post-discharge eldercare for Hong Kong (hackathon webapp)",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  }
+}

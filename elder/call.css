@@ -1,0 +1,102 @@
+/* CareBridge — Elder daily call concept */
+.call-stage { min-height: 100vh; background: oklch(0.26 0.018 158); color: #fff; padding: 30px 24px 40px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.call-stage .ctitle { text-align: center; margin-bottom: 8px; }
+.call-stage .ctitle h1 { font-size: 25px; font-weight: 800; letter-spacing: -0.02em; }
+.call-stage .ctitle p { color: oklch(0.78 0.02 158); font-size: 14.5px; margin-top: 6px; max-width: 56ch; line-height: 1.5; }
+.call-stage .ctitle .zh { font-family: var(--hk); }
+
+.call-grid { display: grid; grid-template-columns: 320px 380px; gap: 28px; align-items: start; margin-top: 14px; }
+@media (max-width: 760px) { .call-grid { grid-template-columns: 1fr; } }
+
+/* phone */
+.cphone { width: 320px; height: 600px; border-radius: 42px; background: oklch(0.16 0.012 158);
+  border: 8px solid oklch(0.34 0.015 158); box-shadow: 0 30px 70px rgba(0,0,0,0.45); overflow: hidden;
+  position: relative; display: flex; flex-direction: column; }
+.cphone .notch { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 96px; height: 26px; border-radius: 99px; background: #000; z-index: 5; }
+
+/* incoming */
+.cincoming { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 64px 24px 30px;
+  background: radial-gradient(120% 60% at 50% 0%, oklch(0.34 0.05 158) 0%, oklch(0.16 0.012 158) 60%); }
+.cincoming .clabel { font-size: 15px; color: oklch(0.82 0.03 158); letter-spacing: 0.02em; }
+.cincoming .cava { width: 110px; height: 110px; border-radius: 50%; margin: 26px 0 18px; display: grid; place-items: center;
+  background: var(--green); font-size: 44px; font-weight: 800; color: #fff;
+  box-shadow: 0 0 0 10px oklch(0.56 0.108 158 / 0.22), 0 0 0 22px oklch(0.56 0.108 158 / 0.10);
+  animation: cpulse 2s ease-in-out infinite; }
+@keyframes cpulse { 0%,100% { box-shadow: 0 0 0 10px oklch(0.56 0.108 158 / 0.22), 0 0 0 22px oklch(0.56 0.108 158 / 0.10);} 50% { box-shadow: 0 0 0 16px oklch(0.56 0.108 158 / 0.16), 0 0 0 34px oklch(0.56 0.108 158 / 0.06);} }
+.cincoming .cname { font-size: 30px; font-weight: 800; letter-spacing: -0.01em; }
+.cincoming .cnamezh { font-family: var(--hk); }
+.cincoming .csub { color: oklch(0.78 0.03 158); font-size: 16px; margin-top: 8px; }
+.cincoming .cbtns { margin-top: auto; display: flex; gap: 56px; }
+.cbtn { width: 76px; height: 76px; border-radius: 50%; border: none; display: grid; place-items: center; cursor: pointer; color: #fff; }
+.cbtn.decline { background: oklch(0.58 0.165 27); }
+.cbtn.accept { background: var(--green); animation: cbob 1.2s ease-in-out infinite; }
+.cbtn svg { width: 32px; height: 32px; }
+.cbtn span { position: absolute; }
+.cbtnwrap { display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: 13px; color: oklch(0.8 0.02 158); }
+@keyframes cbob { 0%,100% { transform: translateY(0);} 50% { transform: translateY(-7px);} }
+
+/* in-call */
+.cincall { flex: 1; display: flex; flex-direction: column; padding: 58px 22px 24px;
+  background: radial-gradient(120% 50% at 50% 0%, oklch(0.30 0.04 158) 0%, oklch(0.16 0.012 158) 55%); }
+.cincall .ctop { text-align: center; }
+.cincall .ctop .cst { font-size: 14px; color: oklch(0.8 0.03 158); }
+.cincall .ctop .ctime { font-family: var(--mono); font-size: 14px; color: oklch(0.72 0.02 158); margin-top: 3px; }
+.cincall .miniava { width: 64px; height: 64px; border-radius: 50%; background: var(--green); display: grid; place-items: center;
+  font-size: 26px; font-weight: 800; margin: 20px auto 0; box-shadow: 0 0 0 7px oklch(0.56 0.108 158 / 0.18); }
+.cwave { display: flex; align-items: center; justify-content: center; gap: 4px; height: 30px; margin: 16px 0; }
+.cwave span { width: 4px; border-radius: 9px; background: oklch(0.62 0.10 158); animation: cw 0.9s ease-in-out infinite; }
+@keyframes cw { 0%,100% { height: 7px;} 50% { height: 26px;} }
+
+.cqbox { background: oklch(1 0 0 / 0.07); border: 1px solid oklch(1 0 0 / 0.10); border-radius: 18px; padding: 16px 17px; }
+.cqbox .crole { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; color: oklch(0.7 0.06 158); font-family: var(--mono); margin-bottom: 7px; }
+.cqbox .cq { font-family: var(--hk); font-size: 21px; font-weight: 700; line-height: 1.35; }
+.cqbox .cqen { font-size: 13.5px; color: oklch(0.76 0.02 158); margin-top: 7px; line-height: 1.4; }
+.cans { margin-top: 12px; align-self: flex-end; max-width: 80%; background: var(--green); border-radius: 18px 18px 4px 18px; padding: 12px 15px; }
+.cans .crole { color: oklch(0.92 0.05 158); }
+.cans .cq { font-size: 19px; }
+.cans .cqen { color: oklch(0.92 0.03 158); }
+
+.cendbar { margin-top: auto; display: flex; justify-content: center; padding-top: 18px; }
+.cendbtn { width: 64px; height: 64px; border-radius: 50%; background: oklch(0.58 0.165 27); border: none; display: grid; place-items: center; color: #fff; cursor: pointer; }
+.cendbtn svg { width: 28px; height: 28px; transform: rotate(135deg); }
+
+/* controls */
+.cctrls { display: flex; align-items: center; gap: 14px; margin-top: 22px; }
+.cctrl { width: 46px; height: 46px; border-radius: 50%; border: 1px solid oklch(1 0 0 / 0.16); background: oklch(1 0 0 / 0.06); color: #fff; display: grid; place-items: center; cursor: pointer; }
+.cctrl:hover { background: oklch(1 0 0 / 0.12); }
+.cctrl svg { width: 20px; height: 20px; }
+.cplay { width: 58px; height: 58px; background: var(--green); border-color: transparent; }
+.cplay svg { width: 24px; height: 24px; }
+.cprog { font-family: var(--mono); font-size: 13px; color: oklch(0.74 0.02 158); margin-left: 4px; }
+
+/* capture panel */
+.cap { width: 380px; background: oklch(0.22 0.014 158); border: 1px solid oklch(0.34 0.015 158); border-radius: 24px; padding: 22px; }
+.cap h3 { font-size: 14px; display: flex; align-items: center; gap: 9px; }
+.cap h3 .zh { color: oklch(0.74 0.02 158); font-weight: 600; font-size: 13px; font-family: var(--hk); }
+.cap .capsub { color: oklch(0.72 0.02 158); font-size: 13px; margin: 6px 0 18px; line-height: 1.45; }
+.caprow { display: flex; align-items: center; gap: 13px; padding: 12px 0; border-bottom: 1px solid oklch(0.30 0.01 158); transition: opacity .4s; }
+.caprow.pending { opacity: 0.32; }
+.caprow .capi { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; flex: none;
+  background: oklch(0.30 0.02 158); color: oklch(0.7 0.03 158); transition: all .4s; }
+.caprow.on .capi { background: var(--stable-bg); color: var(--green-ink); }
+.caprow.flag .capi { background: var(--watch-bg); color: var(--watch-ink); }
+.caprow .capl { font-weight: 600; font-size: 15px; }
+.caprow .capv { font-size: 12.5px; color: oklch(0.72 0.02 158); margin-top: 2px; }
+.caprow.flag .capv { color: oklch(0.82 0.10 80); }
+.caprow .capstate { margin-left: auto; }
+.caprow .capstate svg { width: 20px; }
+.caprow.on .capstate { color: var(--green); }
+.caprow.flag .capstate { color: var(--watch); }
+
+.capsync { margin-top: 18px; display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 16px;
+  background: oklch(0.30 0.03 158); opacity: 0.4; transition: opacity .5s; }
+.capsync.on { opacity: 1; }
+.capsync .syncava { width: 38px; height: 38px; border-radius: 50%; background: var(--green-tint-2); color: var(--green-ink); display: grid; place-items: center; font-weight: 800; flex: none; }
+.capsync .synct { font-weight: 700; font-size: 14px; }
+.capsync .syncs { font-size: 12px; color: oklch(0.74 0.02 158); margin-top: 2px; }
+.capsync .synct .zh { font-family: var(--hk); }
+
+.clang { position: absolute; top: 26px; right: 26px; display: flex; background: oklch(1 0 0 / 0.08); border: 1px solid oklch(1 0 0 / 0.14); border-radius: 999px; padding: 3px; z-index: 10; }
+.clang button { border: none; background: none; padding: 6px 13px; border-radius: 999px; font-weight: 700; font-size: 13px; color: oklch(0.78 0.02 158); cursor: pointer; }
+.clang button.on { background: var(--green); color: #fff; }

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CareBridge 康橋 — Scheme</title>
+<link rel="stylesheet" href="styles/system.css">
+<style>
+  body { background: var(--bg); }
+  .wrap { max-width: 1140px; margin: 0 auto; padding: 0 28px; }
+
+  /* top bar */
+  .top { position: sticky; top: 0; z-index: 20; background: oklch(0.975 0.007 150 / 0.86); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  .top .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+  .brand { display: flex; align-items: center; gap: 11px; font-weight: 800; font-size: 18px; letter-spacing: -0.02em; }
+  .mark { width: 30px; height: 30px; border-radius: 9px; background: var(--green); display: grid; place-items: center; box-shadow: 0 2px 6px oklch(0.5 0.1 158 / .3); }
+  .mark::before { content: ""; width: 15px; height: 15px; border: 2.6px solid #fff; border-radius: 50% 50% 50% 2px; transform: rotate(45deg); }
+  .brand .zh { font-weight: 700; color: var(--ink-soft); font-size: 15px; }
+  .top nav { display: flex; gap: 4px; }
+  .top nav a { padding: 8px 13px; border-radius: 999px; font-weight: 600; font-size: 14px; color: var(--ink-soft); }
+  .top nav a:hover { background: var(--surface); color: var(--ink); }
+
+  /* hero */
+  .hero { padding: 76px 0 30px; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--green-ink); background: var(--green-tint); padding: 6px 13px; border-radius: 999px; }
+  .hero h1 { font-size: 52px; line-height: 1.04; margin: 22px 0 0; max-width: 17ch; letter-spacing: -0.025em; }
+  .hero h1 em { font-style: normal; color: var(--green); }
+  .hero .sub { font-size: 19px; line-height: 1.5; color: var(--ink-soft); max-width: 60ch; margin-top: 20px; }
+  .hero .zhsub { font-family: var(--hk); font-size: 16px; color: var(--ink-faint); margin-top: 8px; }
+
+  /* problem strip */
+  .strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 40px 0 8px; }
+  .stat { padding: 22px; }
+  .stat .n { font-size: 38px; font-weight: 800; letter-spacing: -0.03em; color: var(--green); font-family: var(--mono); }
+  .stat .l { color: var(--ink-soft); font-size: 14.5px; line-height: 1.45; margin-top: 6px; }
+
+  section.block { padding: 46px 0; border-top: 1px solid var(--line); margin-top: 46px; }
+  .sec-label { font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); }
+  .sec-h { font-size: 30px; margin: 12px 0 8px; letter-spacing: -0.02em; }
+  .sec-p { color: var(--ink-soft); font-size: 16.5px; line-height: 1.55; max-width: 66ch; }
+
+  /* role / flow map */
+  .flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 30px; }
+  .role { padding: 24px; position: relative; overflow: hidden; }
+  .role .ico { width: 46px; height: 46px; border-radius: 13px; display: grid; place-items: center; margin-bottom: 16px; }
+  .role h3 { font-size: 19px; }
+  .role .zh { font-family: var(--hk); color: var(--ink-soft); font-weight: 600; font-size: 14px; margin-top: 2px; }
+  .role p { color: var(--ink-soft); font-size: 14.5px; line-height: 1.5; margin-top: 12px; }
+  .role .device { margin-top: 14px; font-family: var(--mono); font-size: 11.5px; color: var(--ink-faint); letter-spacing: 0.02em; text-transform: uppercase; }
+  .role.elder  .ico { background: var(--calm-bg); color: var(--calm); }
+  .role.child  .ico { background: var(--green-tint-2); color: var(--green-ink); }
+  .role.worker .ico { background: var(--watch-bg); color: var(--watch-ink); }
+  .role .ico svg { width: 24px; height: 24px; }
+
+  .loop { display:flex; align-items:center; gap:14px; justify-content:center; margin-top: 26px; flex-wrap: wrap; font-size: 14px; color: var(--ink-soft); }
+  .loop .node { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 9px 16px; font-weight: 600; box-shadow: var(--shadow-sm); }
+  .loop .arr { color: var(--green); font-weight: 700; }
+
+  /* prototype cards */
+  .protos { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 30px; }
+  .proto { display: block; padding: 0; overflow: hidden; transition: transform .12s ease, box-shadow .15s ease; }
+  .proto:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+  .proto .head { padding: 22px 24px 0; display: flex; align-items: center; justify-content: space-between; }
+  .proto h3 { font-size: 20px; }
+  .proto .meta { color: var(--ink-soft); font-size: 14.5px; line-height: 1.5; padding: 10px 24px 0; }
+  .proto .prev { margin: 18px; border-radius: var(--r); height: 168px; overflow: hidden; border: 1px solid var(--line); position: relative; }
+  .proto .go { display:inline-flex; align-items:center; gap:6px; color: var(--green); font-weight: 700; font-size: 14px; padding: 0 24px 22px; }
+  .proto.span2 { grid-column: 1 / -1; }
+  .proto.span2 .prev { height: 230px; }
+  .tagrow { display:flex; gap:7px; padding: 14px 24px 0; flex-wrap: wrap; }
+  .tag { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); background: var(--bg-sink); padding: 4px 9px; border-radius: 7px; }
+
+  /* mini dashboard preview */
+  .mini { width: 100%; height: 100%; background: var(--bg-sink); padding: 12px; display: grid; gap: 8px; grid-template-columns: 64px 1fr; }
+  .mini .side { background: var(--green-deep); border-radius: 8px; }
+  .mini .col { display: grid; gap: 8px; grid-template-rows: 26px 1fr; }
+  .mini .bar { background: var(--surface); border-radius: 7px; border: 1px solid var(--line); }
+  .mini .grid5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; }
+  .mini .cardlet { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px; display: flex; flex-direction: column; gap: 5px; }
+  .mini .cardlet .av { width: 18px; height: 18px; border-radius: 50%; background: var(--green-tint-2); }
+  .mini .cardlet .ln { height: 4px; border-radius: 9px; background: var(--line); }
+  .mini .cardlet .ln.s { width: 60%; }
+  .mini .cardlet .st { height: 6px; width: 34px; border-radius: 9px; margin-top: auto; }
+  .mini .cardlet:nth-child(2) .st { background: var(--watch); }
+  .mini .cardlet:nth-child(4) .st { background: var(--risk); }
+  .mini .cardlet .st { background: var(--stable); }
+
+  .phoneprev { width:100%; height:100%; background: linear-gradient(180deg, var(--green-tint) 0%, var(--bg-sink) 100%); display:grid; place-items:center; }
+  .phoneprev .scr { width: 116px; height: 200px; background: var(--surface); border-radius: 18px; border: 4px solid oklch(0.3 0.02 158); box-shadow: var(--shadow); padding: 12px 11px; display:flex; flex-direction:column; gap: 8px; }
+  .phoneprev .face { width: 42px; height: 42px; border-radius: 50%; background: var(--green-tint-2); margin: 4px auto 2px; }
+  .phoneprev .ln { height: 6px; border-radius: 9px; background: var(--line); }
+  .phoneprev .big { height: 30px; border-radius: 9px; background: var(--stable-bg); border: 1px solid var(--green-tint-2); }
+
+  .callprev { width:100%; height:100%; background: oklch(0.3 0.02 158); display:grid; place-items:center; }
+  .callprev .ph { width: 108px; height: 196px; background: oklch(0.22 0.015 158); border-radius: 20px; border: 4px solid oklch(0.4 0.02 158); display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 12px; color: #fff; }
+  .callprev .ring { width: 50px; height: 50px; border-radius: 50%; background: var(--green); display:grid; place-items:center; box-shadow: 0 0 0 8px oklch(0.56 0.108 158 / 0.25), 0 0 0 16px oklch(0.56 0.108 158 / 0.12); }
+  .callprev .lbl { font-family: var(--mono); font-size: 10px; color: oklch(0.8 0.02 158); }
+
+  /* design system */
+  .ds { display: grid; grid-template-columns: 1.1fr 1fr; gap: 18px; margin-top: 28px; }
+  .panel { padding: 22px; }
+  .panel h4 { font-size: 13px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); font-weight: 600; margin-bottom: 16px; }
+  .swatches { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .sw { border-radius: var(--r-sm); height: 60px; border: 1px solid var(--line); display:flex; align-items:flex-end; padding: 7px; }
+  .sw span { font-family: var(--mono); font-size: 10px; background: oklch(1 0 0 / 0.85); padding: 2px 5px; border-radius: 5px; }
+  .typerow { display:flex; align-items:baseline; gap: 14px; padding: 9px 0; border-bottom: 1px solid var(--line-soft); }
+  .typerow:last-child { border: 0; }
+  .typerow .k { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); width: 74px; flex: none; }
+  .comprow { display:flex; gap: 10px; flex-wrap: wrap; align-items:center; }
+
+  footer { padding: 50px 0 70px; color: var(--ink-faint); font-size: 13.5px; }
+  @media (max-width: 880px) {
+    .strip, .flow, .protos, .ds { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 38px; }
+    .top nav { display: none; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><span class="mark"></span> CareBridge <span class="zh">康橋</span></div>
+    <nav>
+      <a href="#system">The system</a>
+      <a href="#prototypes">Prototypes</a>
+      <a href="#ds">Design</a>
+      <a href="Spec.html">Spec for Claude Code →</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+  <section class="hero">
+    <span class="eyebrow">● Transitional care · Hong Kong pilot</span>
+    <h1>Keep discharged elders well at home — so they <em>don't come back</em>.</h1>
+    <p class="sub">CareBridge bridges the gap after a hospital discharge. A frictionless daily phone call to the elder, a reassuring app for their adult child, and one calm dashboard where a social worker keeps watch over five people — catching the small slips before they become a readmission.</p>
+    <p class="zhsub">出院之後，繼續守護。每日一通電話、子女安心、社工掌握全局 — 在小問題變成再入院之前。</p>
+
+    <div class="strip">
+      <div class="card stat"><div class="n">≈ 1 in 5</div><div class="l">elderly patients are readmitted within 30 days of discharge — most are preventable.</div></div>
+      <div class="card stat"><div class="n">0 apps</div><div class="l">for the elder. They just answer a phone call. No login, no screen, no friction.</div></div>
+      <div class="card stat"><div class="n">5 : 1</div><div class="l">one social worker, five elders, tracked daily. The dashboard does the remembering.</div></div>
+    </div>
+  </section>
+
+  <section class="block" id="system">
+    <div class="sec-label">How it fits together</div>
+    <h2 class="sec-h">Three roles, one care loop</h2>
+    <p class="sec-p">Each role sees only what they need, at the fidelity they can handle. Information flows from the daily call into a shared picture that the family and social worker both act on.</p>
+
+    <div class="flow">
+      <div class="card role elder">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 4h3l1.5 4-2 1.5a11 11 0 0 0 5 5l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A16 16 0 0 1 3 6.2 2 2 0 0 1 5 4z"/></svg></div>
+        <h3>The Elder</h3>
+        <div class="zh">長者 · 受照顧者</div>
+        <p>Gets a warm daily check-in <strong>phone call</strong>. Answers a few simple questions in Cantonese. That's it — no app to learn.</p>
+        <div class="device">Channel · Voice call</div>
+      </div>
+      <div class="card role child">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg></div>
+        <h3>The Adult Child</h3>
+        <div class="zh">子女 · 家屬</div>
+        <p>A simple phone app. Sees at a glance that mum is okay today, reads the plain-language summary, gets nudged only when it matters.</p>
+        <div class="device">Phone app · iOS / Android</div>
+      </div>
+      <div class="card role worker">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 20h10M8 8h4M8 12h8"/></svg></div>
+        <h3>The Social Worker</h3>
+        <div class="zh">社工 · 個案經理</div>
+        <p>The command centre. Five elders, their daily activities, risk flags and home visits — all on one screen. Tablet mode for visits.</p>
+        <div class="device">Web dashboard + tablet</div>
+      </div>
+    </div>
+
+    <div class="loop">
+      <span class="node">📞 Daily call</span><span class="arr">→</span>
+      <span class="node">Activity check answered</span><span class="arr">→</span>
+      <span class="node">Dashboard updates</span><span class="arr">→</span>
+      <span class="node">Family reassured</span><span class="arr">→</span>
+      <span class="node">Worker acts on flags</span>
+    </div>
+  </section>
+
+  <section class="block" id="prototypes">
+    <div class="sec-label">Click through</div>
+    <h2 class="sec-h">The prototypes</h2>
+    <p class="sec-p">Interactive, hi-fi, bilingual. Start with the social worker dashboard — it's the heart of the product.</p>
+
+    <div class="protos">
+      <a class="proto card span2" href="Social Worker Dashboard.html">
+        <div class="head"><h3>Social Worker Dashboard</h3><span class="pill watch"><span class="dot"></span>Primary · heavy</span></div>
+        <p class="meta">Caseload of five discharged elders. Daily activity tracking, readmission-risk triage, an alerts feed, and a deep-dive on each person. Built for a calm morning routine, not alarm fatigue.</p>
+        <div class="tagrow"><span class="tag">caseload</span><span class="tag">ADL tracking</span><span class="tag">risk triage</span><span class="tag">alerts</span><span class="tag">elder detail</span><span class="tag">tablet visit mode</span></div>
+        <div class="prev"><div class="mini">
+          <div class="side"></div>
+          <div class="col"><div class="bar"></div><div class="grid5">
+            <div class="cardlet"><div class="av"></div><div class="ln"></div><div class="ln s"></div><div class="st"></div></div>
+            <div class="cardlet"><div class="av"></div><div class="ln"></div><div class="ln s"></div><div class="st"></div></div>
+            <div class="cardlet"><div class="av"></div><div class="ln"></div><div class="ln s"></div><div class="st"></div></div>
+            <div class="cardlet"><div class="av"></div><div class="ln"></div><div class="ln s"></div><div class="st"></div></div>
+            <div class="cardlet"><div class="av"></div><div class="ln"></div><div class="ln s"></div><div class="st"></div></div>
+          </div></div>
+        </div></div>
+        <span class="go">Open dashboard →</span>
+      </a>
+
+      <a class="proto card" href="Family App.html">
+        <div class="head"><h3>Family App</h3><span class="pill calm"><span class="dot"></span>Adult child</span></div>
+        <p class="meta">A single, reassuring screen for the adult child. Big status, plain-language summary, gentle nudges.</p>
+        <div class="prev"><div class="phoneprev"><div class="scr">
+          <div class="face"></div><div class="big"></div><div class="ln" style="width:80%"></div><div class="ln" style="width:60%"></div><div class="ln" style="width:90%"></div>
+        </div></div></div>
+        <span class="go">Open family app →</span>
+      </a>
+
+      <a class="proto card" href="Elder Call.html">
+        <div class="head"><h3>The Daily Call</h3><span class="pill calm"><span class="dot"></span>Elder · no app</span></div>
+        <p class="meta">How the frictionless check-in works for the elder — and what it quietly captures behind the scenes.</p>
+        <div class="prev"><div class="callprev"><div class="ph">
+          <div class="ring"><svg viewBox="0 0 24 24" width="22" fill="#fff"><path d="M5 4h3l1.5 4-2 1.5a11 11 0 0 0 5 5l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A16 16 0 0 1 3 6.2 2 2 0 0 1 5 4z"/></svg></div>
+          <div class="lbl">CareBridge calling…</div>
+        </div></div></div>
+        <span class="go">See the call flow →</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="block" id="ds">
+    <div class="sec-label">Foundations</div>
+    <h2 class="sec-h">The look &amp; feel</h2>
+    <p class="sec-p">Warm, trustworthy, and maximally legible. Green signals health and calm; amber and red are reserved strictly for triage so they never lose their meaning.</p>
+
+    <div class="ds">
+      <div class="card panel">
+        <h4>Colour</h4>
+        <div class="swatches">
+          <div class="sw" style="background:var(--green)"><span>green</span></div>
+          <div class="sw" style="background:var(--green-deep)"><span>deep</span></div>
+          <div class="sw" style="background:var(--green-tint)"><span>tint</span></div>
+          <div class="sw" style="background:var(--ink)"><span style="color:#fff;background:oklch(0.2 0 0/.6)">ink</span></div>
+          <div class="sw" style="background:var(--stable)"><span>stable</span></div>
+          <div class="sw" style="background:var(--watch)"><span>watch</span></div>
+          <div class="sw" style="background:var(--risk)"><span>risk</span></div>
+          <div class="sw" style="background:var(--bg-sink)"><span>bg</span></div>
+        </div>
+        <h4 style="margin-top:22px">Status language</h4>
+        <div class="comprow">
+          <span class="pill stable"><span class="dot"></span>Stable · 穩定</span>
+          <span class="pill watch"><span class="dot"></span>Watch · 留意</span>
+          <span class="pill risk"><span class="dot"></span>At risk · 高危</span>
+          <span class="pill calm"><span class="dot"></span>Call done · 已致電</span>
+        </div>
+      </div>
+
+      <div class="card panel">
+        <h4>Type — Hanken Grotesk + Noto Sans HK</h4>
+        <div class="typerow"><span class="k">Display</span><span style="font-size:27px;font-weight:800;letter-spacing:-0.02em">Wong Mei-ling</span></div>
+        <div class="typerow"><span class="k">中文</span><span class="zh" style="font-size:24px;font-weight:700">黃美玲 · 出院第 8 天</span></div>
+        <div class="typerow"><span class="k">Body</span><span style="font-size:16px;color:var(--ink-soft)">Took morning medication. Ate breakfast.</span></div>
+        <div class="typerow"><span class="k">Data</span><span class="mono" style="font-size:15px">BP 142/88 · ❤ 76 bpm</span></div>
+        <h4 style="margin-top:18px">Components</h4>
+        <div class="comprow">
+          <button class="btn primary">Log a visit</button>
+          <button class="btn ghost">View detail</button>
+          <span class="avatar" style="width:38px;height:38px">黃</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    CareBridge 康橋 · Hong Kong transitional-care pilot · Prototype &amp; scheme for build handoff.
+    <a href="Spec.html" style="color:var(--green);font-weight:600">Read the full spec for Claude Code →</a>
+  </footer>
+</div>
+</main>
+</body>
+</html>

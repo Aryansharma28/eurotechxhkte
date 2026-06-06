@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CareBridge — Build Spec</title>
+<link rel="stylesheet" href="styles/system.css">
+<style>
+  body { background: var(--bg); }
+  .top { position: sticky; top: 0; z-index: 20; background: oklch(0.975 0.007 150 / 0.86); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  .top .wrap { max-width: 880px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 62px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 17px; letter-spacing: -0.02em; }
+  .mark { width: 28px; height: 28px; border-radius: 8px; background: var(--green); display: grid; place-items: center; }
+  .mark::before { content: ""; width: 13px; height: 13px; border: 2.4px solid #fff; border-radius: 50% 50% 50% 2px; transform: rotate(45deg); }
+  .top a.back { color: var(--green); font-weight: 600; font-size: 14px; }
+
+  .doc { max-width: 880px; margin: 0 auto; padding: 54px 32px 90px; }
+  .kicker { font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--green-ink); background: var(--green-tint); display: inline-block; padding: 6px 13px; border-radius: 999px; }
+  h1.title { font-size: 40px; letter-spacing: -0.025em; margin: 20px 0 0; }
+  h1.title .zh { color: var(--ink-soft); font-weight: 700; }
+  .lede { font-size: 18px; line-height: 1.55; color: var(--ink-soft); margin-top: 16px; border-left: 3px solid var(--green); padding-left: 18px; }
+
+  h2 { font-size: 24px; letter-spacing: -0.02em; margin: 50px 0 6px; padding-top: 26px; border-top: 1px solid var(--line); display: flex; align-items: baseline; gap: 12px; }
+  h2 .num { font-family: var(--mono); font-size: 15px; color: var(--green); font-weight: 600; }
+  h3 { font-size: 16px; margin: 26px 0 10px; color: var(--ink); }
+  p, li { font-size: 15.5px; line-height: 1.62; color: var(--ink-soft); }
+  p { margin: 12px 0; } strong { color: var(--ink); font-weight: 700; }
+  ul { padding-left: 22px; margin: 12px 0; } li { margin: 6px 0; }
+  .zh { font-family: var(--hk); }
+  a.inline { color: var(--green); font-weight: 600; }
+
+  table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 14.5px; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); font-family: var(--mono); font-weight: 600; }
+  td { color: var(--ink-soft); } td strong { color: var(--ink); }
+  tr:hover td { background: var(--surface-2); }
+
+  pre { background: oklch(0.24 0.014 158); color: oklch(0.92 0.02 158); border-radius: var(--r); padding: 20px 22px; overflow-x: auto; font-family: var(--mono); font-size: 13px; line-height: 1.6; margin: 18px 0; }
+  pre .c { color: oklch(0.66 0.04 158); } pre .k { color: oklch(0.78 0.10 80); }
+  code { font-family: var(--mono); font-size: 0.88em; background: var(--bg-sink); padding: 2px 6px; border-radius: 6px; color: var(--green-ink); }
+  pre code { background: none; padding: 0; color: inherit; }
+
+  .card-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
+  .minicard { border: 1px solid var(--line); border-radius: var(--r); padding: 16px 18px; background: var(--surface); }
+  .minicard h4 { font-size: 14px; margin-bottom: 6px; }
+  .minicard p { font-size: 14px; margin: 0; }
+  .phase { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--line-soft); }
+  .phase .pn { font-family: var(--mono); font-weight: 700; color: var(--green); flex: none; width: 44px; }
+  .phase b { color: var(--ink); }
+  .swrow { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0; }
+  .schip { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 999px; padding: 7px 13px; font-size: 13px; font-weight: 600; background: var(--surface); }
+  .schip .sw { width: 14px; height: 14px; border-radius: 4px; }
+  @media (max-width: 720px) { .card-row { grid-template-columns: 1fr; } h1.title { font-size: 30px; } }
+  @media print { .top { display: none; } .doc { padding-top: 20px; } h2 { break-after: avoid; } table, pre, .card-row { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><span class="mark"></span> CareBridge <span class="zh" style="color:var(--ink-soft);font-size:14px">康橋</span></div>
+    <a class="back" href="index.html">← Back to overview</a>
+  </div>
+</header>
+
+<main class="doc">
+  <span class="kicker">Build spec · for Claude Code</span>
+  <h1 class="title">CareBridge <span class="zh">康橋</span></h1>
+  <p class="lede"><strong>One-line:</strong> a transitional-care system that keeps recently-discharged elderly Hong Kong patients well at home — so they don't get readmitted. Three roles, one shared care picture, fed by a frictionless <strong>daily phone call</strong> to the elder.</p>
+  <p style="margin-top:16px">This is the human-readable companion to <code>SPEC.md</code> (the source of truth in this project). It pairs with the clickable prototypes:</p>
+  <table>
+    <thead><tr><th>File</th><th>Shows</th></tr></thead>
+    <tbody>
+      <tr><td><a class="inline" href="index.html">index.html</a></td><td>Scheme overview, role map, design system</td></tr>
+      <tr><td><a class="inline" href="Social Worker Dashboard.html">Social Worker Dashboard.html</a></td><td><strong>Primary product</strong> — caseload, ADL tracking, risk triage, elder detail, tablet visit mode</td></tr>
+      <tr><td><a class="inline" href="Family App.html">Family App.html</a></td><td>Adult child's phone view</td></tr>
+      <tr><td><a class="inline" href="Elder Call.html">Elder Call.html</a></td><td>The daily call + what it captures</td></tr>
+      <tr><td><code>styles/system.css</code></td><td>Design tokens — <strong>reuse verbatim</strong></td></tr>
+    </tbody>
+  </table>
+
+  <h2><span class="num">01</span> Why this exists</h2>
+  <p>Roughly <strong>1 in 5 elderly patients are readmitted within 30 days</strong> of discharge, and most are preventable — missed medication, poor hydration, an untreated infection, a fall, fluid overload in heart-failure patients. The window that matters is the first ~30 days at home.</p>
+  <p>CareBridge closes that window by making daily monitoring effortless for everyone:</p>
+  <ul>
+    <li>The <strong>elder</strong> does nothing but answer a phone — no app, no login, no screen.</li>
+    <li>The <strong>family</strong> gets quiet reassurance and only-when-it-matters nudges.</li>
+    <li>The <strong>social worker</strong> sees five elders at a glance and acts on flags before they escalate.</li>
+  </ul>
+  <p><strong>Pilot scope:</strong> Hong Kong, one social worker × five elders, bilingual 繁體中文 (Cantonese) + English.</p>
+
+  <h2><span class="num">02</span> Roles &amp; access</h2>
+  <table>
+    <thead><tr><th>Role</th><th>中文</th><th>Device</th><th>Auth</th><th>Core job</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Elder</strong></td><td class="zh">長者</td><td>Phone <strong>call only</strong></td><td>None — phone number is identity</td><td>Answer the daily check-in</td></tr>
+      <tr><td><strong>Adult child</strong></td><td class="zh">子女 / 家屬</td><td>Mobile app</td><td>Phone OTP</td><td>See parent's status; respond to nudges</td></tr>
+      <tr><td><strong>Social worker</strong></td><td class="zh">社工</td><td>Web + tablet</td><td>Staff SSO</td><td>Manage caseload of 5; triage; log visits</td></tr>
+    </tbody>
+  </table>
+  <p>One elder may have <strong>0–N family members</strong> linked; each elder has <strong>exactly one</strong> assigned social worker in the pilot.</p>
+
+  <h2><span class="num">03</span> Core concepts</h2>
+  <div class="card-row">
+    <div class="minicard"><h4>Daily call <span class="zh" style="color:var(--ink-faint);font-weight:600">每日電話</span></h4><p>Scheduled Cantonese voice check-in (AI-voice or staff). ~5 simple questions → structured activity records + flags. The primary data source.</p></div>
+    <div class="minicard"><h4>ADL / daily activity</h4><p>Six tracked items: Medication 服藥, Meals 進食, Mobility 活動, Hydration 飲水, Sleep 睡眠, Mood 情緒. Daily status: done / missed / pending.</p></div>
+    <div class="minicard"><h4>Risk tier <span class="zh" style="color:var(--ink-faint);font-weight:600">風險級別</span></h4><p>stable 穩定 (green) · watch 留意 (amber) · risk 高危 (red). Drives sort order &amp; alerts. Derived, overridable.</p></div>
+    <div class="minicard"><h4>Flag · Visit · Care plan</h4><p>Flags = clinical signals from a call/note/visit. Visits = logged home checks. Care plan = clinician-set tasks per elder.</p></div>
+  </div>
+
+  <h2><span class="num">04</span> Data model</h2>
+  <pre><span class="c"># core entities — store bilingual *En / *Zh string pairs</span>
+<span class="k">Elder</span>      id, nameEn, nameZh, age, sex, phone, diagnosis,
+           dischargeDate, livingSituation, assignedWorkerId,
+           riskTier, riskNote
+<span class="k">Worker</span>     id, nameEn, nameZh, role, team
+<span class="k">Family</span>     id, elderId, name, relationship, phone
+<span class="k">DailyCall</span>  id, elderId, scheduledAt, state(done|missed|scheduled),
+           completedAt, channel, transcript[], summaryEn, summaryZh
+<span class="k">Activity</span>   id, elderId, date, activityKey, status, source(call|family|visit)
+<span class="k">Flag</span>       id, elderId, kind, severity(watch|risk), label, raisedAt, resolved
+<span class="k">Vital</span>      id, elderId, key, value, trend, status, measuredAt
+<span class="k">Visit</span>      id, elderId, workerId, scheduledAt, type, location, state,
+           checkedActivities[], notes, photos[], quickFlags[]
+<span class="k">CarePlan</span>   id, elderId, text, done, dueDate</pre>
+  <h3>Derivations</h3>
+  <ul>
+    <li><code>riskTier</code>: start <strong>stable</strong>; → <strong>watch</strong> on an open watch flag, ≥2 missed activities in 7d, or an out-of-range vital trend; → <strong>risk</strong> on any risk flag (e.g. CHF weight gain), a missed call while already on watch, or worker override.</li>
+    <li>Caseload is <strong>sorted by risk</strong> (risk → watch → stable).</li>
+    <li>Family "today" status is a friendly reduction of today's call + open flags — honest but calm when a flag is open.</li>
+  </ul>
+
+  <h2><span class="num">05</span> The daily care loop</h2>
+  <pre>Scheduled daily call ─▶ Elder answers, speaks ─▶ Answers parsed into Activities + Flags
+   ─▶ DailyCall.summary generated ─▶ Dashboard + Family app update live
+   ─▶ Risk recomputed ─▶ if flag/risk: Alert on worker's Today screen
+   ─▶ Worker triages: call elder/family, or schedule a home visit
+   ─▶ Visit logged ─▶ loop continues until elder "graduates" (~Day 30)</pre>
+  <p><strong>Missed-call escalation:</strong> 2 retries; if still unanswered raise a <span class="zh">高危</span> risk flag and notify worker + family (see Chan Kwok-keung in the prototype). <strong>Graduation:</strong> around Day 30, stable elders are discharged from the programme (see Ho Yuen-wah).</p>
+
+  <h2><span class="num">06</span> Screens to build</h2>
+  <h3>Social worker — web dashboard (primary)</h3>
+  <ul>
+    <li><strong>Today</strong> — greeting + KPI strip; "Needs your attention" alerts; caseload grid of 5 cards (risk pill, call status, 6 activity glyphs, top flag); today's visits; programme pulse.</li>
+    <li><strong>Elder detail (drawer)</strong> — risk banner with "why"; this-week activity calendar (6×7); latest vitals; check-ins timeline; care plan; family contact.</li>
+    <li><strong>Tablet visit mode</strong> — full-screen, large targets: tap-check activities, notes, photo, quick flags, Save &amp; sync.</li>
+  </ul>
+  <h3>Adult child — mobile app</h3>
+  <p>Single reassuring <strong>Today</strong> screen: status hero ("She's okay today" + call time), one gentle note if a flag is open, plain-language call summary, today's 6 activities, this week's check-ins, "How you can help today", sticky Call / Message actions. Bilingual toggle.</p>
+  <h3>Elder — no UI</h3>
+  <p>Just the call. Build the <strong>voice agent</strong>: scheduling, Cantonese prompts, retry logic, answer→data mapping, transcript + bilingual summary. <a class="inline" href="Elder Call.html">Elder Call.html</a> demonstrates the script and mapping.</p>
+
+  <h2><span class="num">07</span> Bilingual, accessibility &amp; tone</h2>
+  <ul>
+    <li>Every string ships <strong>English + 繁體中文 (HK Cantonese register)</strong>; language toggle on every surface, persisted per user. Call is Cantonese-first; transcripts stored bilingually.</li>
+    <li><strong>Elder = accessibility by removal</strong> — no screen at all; warm, slow, one question at a time.</li>
+    <li><strong>Family app</strong> — ≥15px body, large hero, 44px+ targets, plain language, never alarmist.</li>
+    <li><strong>Dashboard</strong> — colour never the only signal (icon + label too); amber/red reserved strictly for triage. Honest reassurance: when something's wrong, say so plainly <em>and</em> say it's handled.</li>
+  </ul>
+
+  <h2><span class="num">08</span> Suggested stack</h2>
+  <ul>
+    <li><strong>Frontend:</strong> React + TypeScript; map <code>styles/system.css</code> tokens → Tailwind/CSS vars. Family app as PWA or React Native.</li>
+    <li><strong>Backend:</strong> Postgres (schema above) + REST/tRPC; websockets for live dashboard updates.</li>
+    <li><strong>Voice:</strong> telephony + Cantonese TTS/STT voice-agent for the call; LLM to parse answers → Activity/Flag and write the bilingual summary.</li>
+    <li><strong>Compliance:</strong> health data — plan PDPO (HK) consent, per-role access control, and an audit log on every elder-record view.</li>
+  </ul>
+
+  <h2><span class="num">09</span> Build phases (HK pilot)</h2>
+  <div class="phase"><span class="pn">M1</span><div><b>Data + dashboard read path.</b> Schema, seed 5 elders, Today + caseload + elder detail (read-only).</div></div>
+  <div class="phase"><span class="pn">M2</span><div><b>The call.</b> Voice agent, scheduling, answer→data mapping, summaries → live Activities/Flags.</div></div>
+  <div class="phase"><span class="pn">M3</span><div><b>Worker actions.</b> Alerts, visit mode (write), care plan, risk recompute.</div></div>
+  <div class="phase"><span class="pn">M4</span><div><b>Family app.</b> Status hero, summary, nudges, contact.</div></div>
+  <div class="phase"><span class="pn">M5</span><div><b>Pilot hardening.</b> PDPO consent, audit, bilingual QA with real Cantonese speakers, escalation runbook.</div></div>
+
+  <h2><span class="num">10</span> Design tokens</h2>
+  <p>Reuse <code>styles/system.css</code> verbatim. Key values:</p>
+  <div class="swrow">
+    <span class="schip"><span class="sw" style="background:var(--green)"></span>brand green · oklch(0.56 0.108 158)</span>
+    <span class="schip"><span class="sw" style="background:var(--watch)"></span>watch · oklch(0.72 0.135 72)</span>
+    <span class="schip"><span class="sw" style="background:var(--risk)"></span>risk · oklch(0.575 0.165 27)</span>
+    <span class="schip"><span class="sw" style="background:var(--bg-sink);border:1px solid var(--line)"></span>warm bg · oklch(0.975 0.007 150)</span>
+  </div>
+  <p><strong>Type:</strong> Hanken Grotesk (Latin) + Noto Sans HK (中文) + Spline Sans Mono (data). <strong>Radius:</strong> 8 / 14 / 20 / 28. Components in the prototype: <code>.pill</code>, <code>.btn</code>, <code>.avatar</code>, activity glyphs, week calendar, timeline, KPI cards.</p>
+
+  <p style="margin-top:46px;padding-top:24px;border-top:1px solid var(--line);color:var(--ink-faint);font-size:14px">CareBridge 康橋 · Hong Kong transitional-care pilot · For full machine-readable detail see <code>SPEC.md</code>.</p>
+</main>
+</body>
+</html>
