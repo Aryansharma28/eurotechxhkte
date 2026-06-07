@@ -345,10 +345,14 @@ function FamilyApp() {
           <div className="fam-week">
             {weekDates.map((d, i) => {
               const done = callStateFor(d)
+              const dayNum = new Date(d + "T12:00:00").getDate()
+              const isToday = i === 6
               return (
-                <div key={d} className={"fam-day " + (i === 6 ? "today" : "")}>
+                <div key={d} className={"fam-day " + (isToday ? "today" : "")}>
                   <span className="fd">{t(["M","T","W","T","F","S","S"][i], ["一","二","三","四","五","六","日"][i])}</span>
-                  <span className={"fdot " + (done ? "done" : "")}>{done ? I.check : ""}</span>
+                  <span className={"fdot " + (done ? "done" : "")}>
+                    {done ? I.check : <span style={{ fontSize: 11, fontWeight: 600, color: isToday ? "var(--green)" : "var(--ink-faint)", lineHeight: 1 }}>{dayNum}</span>}
+                  </span>
                 </div>
               )
             })}
