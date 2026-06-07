@@ -28,9 +28,8 @@
     backdrop-filter: blur(24px) saturate(200%);
     border-bottom: 1px solid var(--line);
   }
-  .nav-brand { display:flex; align-items:center; gap:9px; font-weight:700; font-size:15px; letter-spacing:-0.025em; margin-right:auto; }
-  .nav-mark { width:26px; height:26px; border-radius:7px; background:var(--green); display:grid; place-items:center; flex:none; box-shadow:0 2px 10px rgba(46,170,91,0.40); }
-  .nav-mark::before { content:""; width:11px; height:11px; border:2px solid rgba(255,255,255,0.95); border-radius:50% 50% 50% 2px; transform:rotate(45deg); display:block; }
+  .nav-brand { display:flex; align-items:center; gap:10px; font-weight:700; font-size:15px; letter-spacing:-0.025em; margin-right:auto; }
+  .nav-logo { height:32px; width:auto; flex:none; filter:brightness(0) invert(1); }
   .nav-zh { color:var(--faint); font-weight:400; font-size:13px; }
   .nav-links { display:flex; gap:2px; margin-right:20px; }
   .nav-link { font-size:13px; font-weight:500; color:var(--muted); padding:5px 12px; border-radius:7px; transition:background .12s,color .12s; }
@@ -206,8 +205,7 @@
   /* FOOTER */
   footer { background:#080809; border-top:1px solid var(--line); padding:28px 36px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px; }
   .f-brand { display:flex; align-items:center; gap:9px; font-size:14px; font-weight:600; color:rgba(255,255,255,.44); }
-  .f-mark { width:22px; height:22px; border-radius:6px; background:var(--green); display:grid; place-items:center; }
-  .f-mark::before { content:""; width:9px; height:9px; border:1.8px solid rgba(255,255,255,.95); border-radius:50% 50% 50% 2px; transform:rotate(45deg); display:block; }
+  .f-logo { height:22px; width:auto; flex:none; filter:brightness(0) invert(1); opacity:.55; }
   .f-links { display:flex; gap:22px; }
   .f-links a { font-size:13px; color:var(--faint); transition:color .12s; }
   .f-links a:hover { color:rgba(255,255,255,.65); }
@@ -229,7 +227,7 @@
 
 <!-- NAV -->
 <nav class="nav">
-  <div class="nav-brand"><span class="nav-mark"></span>CareBridge <span class="nav-zh">康橋</span></div>
+  <div class="nav-brand"><img src="logo.svg" alt="CareBridge" class="nav-logo">CareBridge <span class="nav-zh">康橋</span></div>
   <div class="nav-links">
     <a class="nav-link" href="#system">The system</a>
     <a class="nav-link" href="#prototypes">Prototypes</a>
@@ -438,7 +436,7 @@
 </div>
 
 <footer>
-  <div class="f-brand"><span class="f-mark"></span>CareBridge 康橋</div>
+  <div class="f-brand"><img src="logo.svg" alt="" class="f-logo">CareBridge 康橋</div>
   <div class="f-links">
     <a href="Social Worker Dashboard.html">Dashboard</a>
     <a href="Family App.html">Family App</a>

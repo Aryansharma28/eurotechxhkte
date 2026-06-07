@@ -158,7 +158,7 @@ function Dashboard() {
       {/* sidebar */}
       <aside className="side">
         <div className="brand">
-          <span className="mark"></span>
+          <img src="logo.svg" alt="CareBridge" className="brand-logo" />
           CareBridge <span className="zh">康橋</span>
         </div>
         <div className="navg">

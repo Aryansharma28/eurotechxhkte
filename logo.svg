@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 60" fill="none">
+  <!-- butterfly / flower above elder -->
+  <ellipse cx="32" cy="4.5" rx="5.5" ry="2.8" fill="#CDE1C0" transform="rotate(-38 32 4.5)"/>
+  <ellipse cx="32" cy="4.5" rx="5.5" ry="2.8" fill="#CDE1C0" transform="rotate(38 32 4.5)"/>
+  <ellipse cx="32" cy="6.5" rx="3.8" ry="2.0" fill="#CDE1C0" transform="rotate(-15 32 6.5)"/>
+  <ellipse cx="32" cy="6.5" rx="3.8" ry="2.0" fill="#CDE1C0" transform="rotate(15 32 6.5)"/>
+  <circle cx="32" cy="5.5" r="1.6" fill="#8DBEAA"/>
+
+  <!-- left adult head -->
+  <circle cx="13" cy="14" r="7" fill="#4A9B7F"/>
+  <!-- right adult head -->
+  <circle cx="51" cy="14" r="7" fill="#4A9B7F"/>
+  <!-- elder head — lighter, smaller, centred -->
+  <circle cx="32" cy="23" r="5.2" fill="#8DBEAA"/>
+
+  <!-- bridge / caring arc body — two adults reaching inward, meeting below elder -->
+  <path d="M7 21 C6 33 15 42 24 43 L32 52 L40 43 C49 42 58 33 57 21"
+        stroke="#4A9B7F" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

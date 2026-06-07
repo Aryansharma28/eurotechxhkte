@@ -4,7 +4,7 @@ import { handle } from 'hono/vercel'
 import { createMiddleware } from 'hono/factory'
 import { createClient } from '@supabase/supabase-js'
 
-export const config = { runtime: 'nodejs20.x' }
+export const config = { runtime: 'nodejs' }
 
 // ── Supabase helpers ──────────────────────────────────────────────────────────
 

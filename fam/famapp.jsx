@@ -33,9 +33,7 @@ function FamilyLogin({ onLogin }) {
     <div style={{ minHeight: "100%", display: "flex", flexDirection: "column", justifyContent: "center", padding: "36px 24px", background: "#F2F2F7" }}>
       {/* logo */}
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 36 }}>
-        <span style={{ width: 36, height: 36, borderRadius: 10, background: "var(--green)", display: "grid", placeItems: "center", flexShrink: 0, boxShadow: "0 3px 10px rgba(46,170,91,0.35)" }}>
-          <span style={{ width: 14, height: 14, border: "2.4px solid #fff", borderRadius: "50% 50% 50% 2px", transform: "rotate(45deg)", display: "block" }}></span>
-        </span>
+        <img src="logo.svg" alt="CareBridge" style={{ height: 36, width: "auto", flexShrink: 0 }} />
         <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.03em" }}>CareBridge <span style={{ fontWeight: 500, color: "var(--ink-soft)", fontSize: 14, fontFamily: "var(--hk)" }}>康橋</span></span>
       </div>
 
@@ -214,9 +212,12 @@ function FamilyApp() {
         {/* ── iOS Nav Bar (sticky, blurred) ── */}
         <div className="fam-nav">
           <div className="fam-head">
-            <div className="fam-hi">
-              {t("Good morning, ", "早晨，")}
-              <b>{t(childFirst, childFirstZh)}</b>
+            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+              <img src="logo.svg" alt="CareBridge" style={{ height: 24, width: "auto", flexShrink: 0 }} />
+              <div className="fam-hi">
+                {t("Good morning, ", "早晨，")}
+                <b>{t(childFirst, childFirstZh)}</b>
+              </div>
             </div>
             <div className="fam-top-right">
               <div className="fam-lang">

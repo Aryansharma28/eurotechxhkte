@@ -20,6 +20,7 @@
   color: var(--ink); padding: 20px 16px 16px;
   border-bottom: 0.5px solid var(--line);
 }
+.side .brand .brand-logo { height: 30px; width: auto; flex: none; }
 .side .brand .mark {
   width: 30px; height: 30px; border-radius: 8px;
   background: var(--green);
