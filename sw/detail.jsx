@@ -1,5 +1,22 @@
 /* CareBridge — Elder detail drawer + tablet visit mode (API-wired) */
 
+// Inline sparkline for drawer — self-contained, no dep on neuro.jsx
+function DrawerSparkline({ values, level, width = 64, height = 26 }) {
+  if (!values || values.length < 2) return null
+  const mn = Math.min(...values); const mx = Math.max(...values)
+  const rng = mx - mn || 1; const pad = 3
+  const xf = i => ((i / (values.length - 1)) * (width - pad * 2) + pad).toFixed(1)
+  const yf = v => ((height - pad) - ((v - mn) / rng) * (height - pad * 2)).toFixed(1)
+  const pts = values.map((v, i) => `${xf(i)},${yf(v)}`).join(' L ')
+  const color = level === 'risk' ? 'var(--risk)' : level === 'watch' ? 'var(--watch)' : 'var(--stable)'
+  return (
+    <svg width={width} height={height} style={{ display: 'block', overflow: 'visible' }}>
+      <path d={`M ${pts}`} fill="none" stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" opacity={0.85} />
+      <circle cx={xf(values.length - 1)} cy={yf(values[values.length - 1])} r={2.5} fill={color} />
+    </svg>
+  )
+}
+
 // ── Week calendar (uses 7-day activity_records from API) ─────────────────────
 function WeekCalendar({ activities, lang }) {
   // activities: flat array of {record_date, activity_key, status}
@@ -138,6 +155,66 @@ function ElderDetail({ id, lang, onClose, onVisit, onReload }) {
               ))}
             </div>
           </div>
+
+          {/* ── Voice biomarkers ── */}
+          {(typeof BIOMARKERS !== 'undefined') && BIOMARKERS[e.id] && (() => {
+            const bm = BIOMARKERS[e.id]
+            const thresholds = (typeof NEURO_THRESHOLDS !== 'undefined') ? NEURO_THRESHOLDS : {}
+            const keys = (typeof BIOMARKER_KEYS !== 'undefined') ? BIOMARKER_KEYS : Object.keys(thresholds)
+            return (
+              <div className="dcard card">
+                <h3>{I.wave} {L(lang, 'Voice biomarkers', '語音生物標誌')}</h3>
+                {bm.alertLevel && (
+                  <div className={'riskbanner ' + bm.alertLevel} style={{ marginBottom: 14 }}>
+                    <div className="aic" style={{ color: bm.alertLevel === 'risk' ? 'var(--risk-ink)' : 'var(--watch-ink)' }}>{I.alert}</div>
+                    <div>
+                      <div className="rt">{bm.alertLevel === 'risk' ? L(lang, 'Notable voice change — consider review', '語音出現顯著變化 — 考慮複診') : L(lang, 'Voice pattern shift — monitor closely', '語音模式有輕微偏移 — 密切跟進')}</div>
+                    </div>
+                  </div>
+                )}
+                <div style={{ display: 'flex', gap: 12, justifyContent: 'space-between', flexWrap: 'wrap' }}>
+                  {keys.map(k => {
+                    const t = thresholds[k]
+                    if (!t) return null
+                    const values = bm.week.map(d => d[k])
+                    const level  = bm.metricAlerts[k]
+                    const today  = bm.today[k]
+                    const base   = bm.baseline[k]
+                    const delta  = today - base
+                    const pct    = Math.abs(delta / (base || 1) * 100).toFixed(0)
+                    const worse  = t.higherBetter ? delta < 0 : delta > 0
+                    const numColor = level === 'risk' ? 'var(--risk-ink)' : level === 'watch' ? 'var(--watch-ink)' : 'var(--ink)'
+                    return (
+                      <div key={k} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, minWidth: 58 }}>
+                        <div style={{ fontSize: 10, color: 'var(--ink-faint)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                          {L(lang, t.label_en, t.label_zh)}
+                        </div>
+                        <DrawerSparkline values={values} level={level} />
+                        <span style={{ fontSize: 15, fontWeight: 800, fontFamily: 'var(--mono)', color: numColor, lineHeight: 1 }}>
+                          {k === 'pauses' ? today.toFixed(2) : String(today)}
+                          <span style={{ fontSize: 9, fontWeight: 400, color: 'var(--ink-faint)', marginLeft: 2 }}>{t.unit}</span>
+                        </span>
+                        {+pct > 2
+                          ? <span style={{ fontSize: 10, fontWeight: 600, color: level === 'ok' ? 'var(--ink-faint)' : numColor, fontFamily: 'var(--mono)' }}>
+                              {worse ? '↓' : '↑'} {pct}%
+                            </span>
+                          : <span style={{ fontSize: 10, color: 'var(--ink-faint)' }}>stable</span>
+                        }
+                        {level !== 'ok' && (
+                          <span className={'pill ' + level} style={{ fontSize: 9, padding: '1px 6px' }}>
+                            <span className="dot" />{level}
+                          </span>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+                <div style={{ marginTop: 12, paddingTop: 10, borderTop: '0.5px solid var(--line)', fontSize: 11, color: 'var(--ink-faint)', fontFamily: 'var(--mono)' }}>
+                  {L(lang, 'Voice biomarkers · daily call · sparklines = 7 days · baseline = days 1–7', '語音生物標誌 · 每日通話 · 趨勢圖＝7天 · 基準＝第1–7天')}
+                </div>
+              </div>
+            )
+          })()}
 
           <div className="dcard card">
             <h3>{I.clock} {L(lang, 'Recent check-ins', '近期跟進')}</h3>

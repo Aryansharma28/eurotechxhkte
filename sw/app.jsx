@@ -139,9 +139,8 @@ function Dashboard() {
     : 0
 
   const navItems = [
-    { k: 'today',  en: 'Today',  zh: '今日',    ic: I.home },
-    { k: 'neuro',  en: 'Neuro',  zh: '神經趨勢', ic: I.wave, badge: neuroAlertCount || null },
-    { k: 'alerts', en: 'Alerts', zh: '提示',    ic: I.bell, badge: alerts.length || null },
+    { k: 'today',  en: 'Today',  zh: '今日', ic: I.home },
+    { k: 'alerts', en: 'Alerts', zh: '提示', ic: I.bell, badge: alerts.length || null },
   ]
 
   const today = new Date()
@@ -151,7 +150,6 @@ function Dashboard() {
 
   const titles = {
     today:  L(lang, 'Good morning, Karen', '早晨，家欣'),
-    neuro:  L(lang, 'Neurological Trends', '神經語音趨勢'),
     alerts: L(lang, 'Alerts', '提示'),
   }
 
@@ -202,7 +200,6 @@ function Dashboard() {
 
         {loading && <LoadingSkeleton />}
         {!loading && nav === 'today'  && <TodayView  elders={elders} visits={visits} alerts={alerts} lang={lang} onOpen={setOpenId} onVisit={setVisitId} />}
-        {!loading && nav === 'neuro'  && <NeuroView  elders={elders} lang={lang} onOpen={setOpenId} />}
         {!loading && nav === 'alerts' && <AlertsView alerts={alerts} lang={lang} onOpen={setOpenId} onReload={loadData} />}
       </div>
 
