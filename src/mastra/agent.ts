@@ -1,25 +1,32 @@
 import { Agent } from '@mastra/core/agent';
 import { GeminiLiveVoice } from '@mastra/voice-google-gemini-live';
 import { logDailyCheckIn } from './tools';
+import { callSession, type PatientContext } from '../services/callSession';
 import * as dotenv from 'dotenv';
+import path from 'path';
 
+// Load .env from root, then fall back to voice-wt/.env (local dev convenience)
 dotenv.config();
+dotenv.config({ path: path.join(process.cwd(), 'voice-wt', '.env'), override: false });
 
-// Initialize the Gemini Live Voice module.
-const voice = new GeminiLiveVoice({
-  apiKey: process.env.GEMINI_API_KEY,
-  model: 'gemini-3.1-flash-live-preview',
-  speaker: 'Puck',
-  debug: true,
-});
+function buildInstructions(patient: PatientContext | null): string {
+  const patientBlock = patient
+    ? `PATIENT YOU ARE CALLING
+- Name: ${patient.name_en} (${patient.name_zh})
+- Age: ${patient.age}, ${patient.sex === 'F' ? 'female' : 'male'}
+- Diagnosis: ${patient.dx_en} (${patient.dx_zh})
+- Living situation: ${patient.lives_en ?? 'unknown'} (${patient.lives_zh ?? ''})
+- Current risk tier: ${patient.risk_tier}${patient.risk_note_en ? `\n- Risk note: ${patient.risk_note_en}` : ''}
 
-export const voiceAgent = new Agent({
-  id: 'carebridge-checkin-agent',
-  name: 'CareBridge Daily Check-in',
-  instructions: `You are CareBridge 康橋, a warm, patient care companion phoning a recently-discharged elderly person in Hong Kong for their daily check-in.
+Address them by name in Cantonese. For a female elder named ${patient.name_zh}, use a warm form of address like 婆婆 or 阿姐.`
+    : `PATIENT: an elderly recently-discharged patient in Hong Kong. Address them politely as 婆婆 / 伯伯 as appropriate.`;
+
+  return `You are CareBridge 康橋, a warm, patient care companion phoning a recently-discharged elderly person in Hong Kong for their daily check-in.
+
+${patientBlock}
 
 LANGUAGE
-- Speak Cantonese (廣東話) by default, in a warm, respectful register suitable for an elder. Address them politely (e.g. 婆婆 / 伯伯 / 阿婆 / 阿伯 as appropriate, or 你).
+- Speak Cantonese (廣東話) by default, in a warm, respectful register suitable for an elder.
 - If they reply in English or another language, follow their lead.
 
 MANNER
@@ -48,7 +55,21 @@ ENDING THE CALL
   - the status of each of the six activities (done / missed / unknown),
   - any health concerns as flags (use 'risk' for urgent issues, 'watch' otherwise),
   - a short bilingual summary (English + 繁體中文) for the family and nurse.
-- Only set an activity to 'done' or 'missed' if they actually told you; otherwise use 'unknown'.`,
+- Only set an activity to 'done' or 'missed' if they actually told you; otherwise use 'unknown'.`;
+}
+
+// Initialize the Gemini Live Voice module.
+const voice = new GeminiLiveVoice({
+  apiKey: process.env.GEMINI_API_KEY,
+  model: 'gemini-2.0-flash-live-001',
+  speaker: 'Puck',
+  debug: true,
+});
+
+export const voiceAgent = new Agent({
+  id: 'carebridge-checkin-agent',
+  name: 'CareBridge Daily Check-in',
+  instructions: () => buildInstructions(callSession.patient),
   model: 'google/gemini-2.5-flash',
   voice: voice as any,
   tools: {

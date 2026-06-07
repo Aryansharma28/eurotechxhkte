@@ -128,6 +128,59 @@ export async function recordCheckIn(elderId: string, payload: CheckInPayload): P
   };
 }
 
+/**
+ * Record a missed daily call after 2 unanswered attempts.
+ * Writes a no-answer daily_calls row, inserts a flag, and recomputes risk tier.
+ */
+export async function recordMissedCall(elderId: string): Promise<CheckInResult> {
+  const sb = assertDb();
+  const nowIso = new Date().toISOString();
+
+  const { data: callRow, error: callErr } = await sb
+    .from('daily_calls')
+    .insert({
+      elder_id: elderId,
+      state: 'no-answer',
+      channel: 'voice-agent',
+      scheduled_at: nowIso,
+      completed_at: nowIso,
+      summary_en: 'Missed daily call — 2 attempts, no answer',
+      summary_zh: '未接每日電話 — 已試兩次無人接聽',
+    })
+    .select('id')
+    .single();
+  if (callErr) throw new Error(`daily_calls insert: ${callErr.message}`);
+  const callId = callRow?.id as string | undefined;
+
+  // Severity mirrors current risk tier: already-at-risk elders escalate immediately.
+  const { data: elder } = await sb.from('elders').select('risk_tier').eq('id', elderId).single();
+  const severity: 'risk' | 'watch' = elder?.risk_tier === 'risk' ? 'risk' : 'watch';
+
+  const { error: flagErr } = await sb.from('flags').insert({
+    elder_id: elderId,
+    kind: 'call',
+    severity,
+    label_en: 'Missed daily call — 2 attempts, no answer',
+    label_zh: '未接每日電話 — 已試兩次無人接聽',
+    source: 'call',
+    resolved: false,
+  });
+  if (flagErr) throw new Error(`flags insert: ${flagErr.message}`);
+
+  const { data: openFlags } = await sb
+    .from('flags')
+    .select('severity')
+    .eq('elder_id', elderId)
+    .eq('resolved', false);
+  let newRiskTier = 'stable';
+  if (openFlags?.some((f: any) => f.severity === 'risk')) newRiskTier = 'risk';
+  else if (openFlags?.some((f: any) => f.severity === 'watch')) newRiskTier = 'watch';
+  await sb.from('elders').update({ risk_tier: newRiskTier }).eq('id', elderId);
+
+  console.log(`[MissedCall] elder=${elderId} call=${callId} severity=${severity} → risk=${newRiskTier}`);
+  return { ok: true, callId, activitiesWritten: 0, flagsWritten: 1, newRiskTier };
+}
+
 /** Resolve which elder a phone number belongs to (for inbound / routed calls). */
 export async function findElderByPhone(phone: string): Promise<string | null> {
   const sb = assertDb();

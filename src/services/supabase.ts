@@ -1,5 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import * as dotenv from 'dotenv';
+import type { PatientContext } from './callSession';
 
 dotenv.config();
 
@@ -23,4 +24,19 @@ export function assertDb(): SupabaseClient {
     throw new Error('Supabase is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in your .env.');
   }
   return _sb;
+}
+
+/** Fetch a single elder's context for the voice agent. Returns null if not configured or not found. */
+export async function fetchPatient(elderId: string): Promise<PatientContext | null> {
+  if (!_sb) return null;
+  const { data, error } = await _sb
+    .from('elders')
+    .select('id, name_en, name_zh, age, sex, dx_en, dx_zh, lives_en, lives_zh, risk_tier, risk_note_en, risk_note_zh')
+    .eq('id', elderId)
+    .single();
+  if (error) {
+    console.warn(`[Supabase] fetchPatient(${elderId}): ${error.message}`);
+    return null;
+  }
+  return data as PatientContext;
 }

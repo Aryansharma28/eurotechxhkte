@@ -3,19 +3,46 @@ import expressWs from 'express-ws';
 import { voiceAgent } from './mastra/agent';
 import { PassThrough } from 'stream';
 import * as dotenv from 'dotenv';
+import path from 'path';
 import twilio from 'twilio';
 import { processIncomingAudio, resetCallMetrics, getCallMetrics } from './services/metrics';
 import { startCallSession, endCallSession, callSession } from './services/callSession';
-import { recordCheckIn, findElderByPhone, CheckInPayload } from './services/checkin';
+import { recordCheckIn, recordMissedCall, findElderByPhone, CheckInPayload } from './services/checkin';
+import { fetchPatient } from './services/supabase';
 
-// Load environment variables
+// Load .env from root, fall back to voice-wt/.env for local dev
 dotenv.config();
+dotenv.config({ path: path.join(process.cwd(), 'voice-wt', '.env'), override: false });
 
 const { app } = expressWs(express());
 const port = process.env.PORT || 3000;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+// Tracks outbound calls so the statusCallback can find the elder + retry count.
+const pendingCalls = new Map<string, { elderId: string | null; toNumber: string; attempt: number }>();
+
+async function placeCall(
+  elderId: string | null,
+  toNumber: string,
+  tunnelUrl: string,
+  attempt: number,
+): Promise<string> {
+  const client = twilio(process.env.TWILIO_ACCOUNT_SID!, process.env.TWILIO_AUTH_TOKEN!);
+  if (attempt === 1 && elderId) startCallSession(elderId);
+  const call = await client.calls.create({
+    url: `${tunnelUrl}/incoming-call`,
+    to: toNumber,
+    from: process.env.TWILIO_PHONE_NUMBER!,
+    statusCallback: `${tunnelUrl}/call-status`,
+    statusCallbackMethod: 'POST',
+    statusCallbackEvent: ['completed'],
+  });
+  pendingCalls.set(call.sid, { elderId, toNumber, attempt });
+  console.log(`[Twilio] Call ${call.sid} placed (attempt ${attempt}, elder=${elderId})`);
+  return call.sid;
+}
 
 // --- Audio Transcoding Tables and Functions ---
 const bias = 132;
@@ -152,17 +179,27 @@ app.ws('/media-stream', async (ws, req) => {
   });
 
   try {
-    // 2. Connect to Gemini Voice
+    // 2. Fetch patient context before connecting so dynamic instructions have data
+    if (callSession.elderId && !callSession.patient) {
+      callSession.patient = await fetchPatient(callSession.elderId);
+      if (callSession.patient) {
+        console.log(`[CallSession] Patient loaded: ${callSession.patient.name_en} (${callSession.elderId})`);
+      } else {
+        console.warn(`[CallSession] Could not load patient context for elder=${callSession.elderId}`);
+      }
+    }
+
+    // 3. Connect to Gemini Voice (instructions resolved here with patient context)
     await voiceAgent.voice.connect();
     isConnected = true;
     console.log(`[Gemini] Voice connected`);
 
-    // 3. Start sending the input stream to Gemini
+    // 4. Start sending the input stream to Gemini
     voiceAgent.voice.send(inputStream).catch(err => {
       console.error(`[Gemini] Error sending stream:`, err);
     });
 
-    // 4. Listen for agent's voice output and errors
+    // 5. Listen for agent's voice output and errors
     const onSpeaking = (data: any) => {
       const audio = data?.audio;
       if (audio) {
@@ -176,7 +213,7 @@ app.ws('/media-stream', async (ws, req) => {
               ? Buffer.from(audio, 'base64')
               : Buffer.from(audio));
         const transcodedAudio = transcodeGeminiToTwilio(inputBuffer);
-        
+
         ws.send(JSON.stringify({
           event: 'media',
           streamSid: streamSid,
@@ -194,9 +231,14 @@ app.ws('/media-stream', async (ws, req) => {
     voiceAgent.voice.on('speaking', onSpeaking);
     voiceAgent.voice.on('error', onError);
 
-    // Trigger initial greeting from the agent now that Gemini is connected
+    // 6. Personalized opening greeting using the patient's name
+    const p = callSession.patient;
+    const greeting = p
+      ? `喂，你好！我係康橋嘅關懷助理。請問係${p.name_zh}${p.sex === 'F' ? '婆婆' : '伯伯'}嗎？今日打嚟同你做健康問候，請問你而家點呀？`
+      : '喂，你好！我係康橋嘅關懷助理，打嚟同你做今日嘅健康問候。請問你今日點呀？';
+
     console.log(`[Gemini] Triggering initial greeting...`);
-    voiceAgent.voice.speak('喂，你好！我係康橋嘅關懷助理，打嚟同你做今日嘅健康問候。請問你今日點呀？').catch(err => {
+    voiceAgent.voice.speak(greeting).catch(err => {
       console.error(`[Gemini] Error sending initial greeting:`, err);
     });
 
@@ -221,32 +263,58 @@ app.ws('/media-stream', async (ws, req) => {
 });
 
 app.get('/make-call', async (req, res) => {
-  const accountSid = process.env.TWILIO_ACCOUNT_SID;
-  const authToken = process.env.TWILIO_AUTH_TOKEN;
-  const fromNumber = process.env.TWILIO_PHONE_NUMBER;
   const toNumber = process.env.USER_PHONE_NUMBER;
   const tunnelUrl = process.env.TUNNEL_URL || `https://${req.headers.host}`;
 
-  if (!accountSid || !authToken || !fromNumber || !toNumber) {
+  if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_PHONE_NUMBER || !toNumber) {
     return res.status(400).send('Missing Twilio credentials or phone numbers in environment variables.');
   }
 
-  // Which elder is this call for? ?elderId=chan → that elder; else DEMO_ELDER_ID.
   const elderId = (req.query.elderId as string) || process.env.DEMO_ELDER_ID || null;
-  startCallSession(elderId);
 
   try {
-    const client = twilio(accountSid, authToken);
-    console.log(`[Twilio] Initiating outbound call from ${fromNumber} to ${toNumber}...`);
-    const call = await client.calls.create({
-      url: `${tunnelUrl}/incoming-call`,
-      to: toNumber,
-      from: fromNumber,
-    });
-    res.send(`Call successfully initiated! Call SID: ${call.sid}`);
+    const sid = await placeCall(elderId, toNumber, tunnelUrl, 1);
+    res.send(`Call successfully initiated! Call SID: ${sid}`);
   } catch (error: any) {
     console.error('[Twilio] Failed to trigger call:', error);
     res.status(500).send(`Failed to trigger call: ${error.message}`);
+  }
+});
+
+// Twilio posts here when a call ends. Handles no-answer: retry once after 30 min, then flag.
+app.post('/call-status', async (req, res) => {
+  res.sendStatus(204);
+
+  const callSid = req.body.CallSid as string;
+  const callStatus = req.body.CallStatus as string;
+
+  const pending = pendingCalls.get(callSid);
+  if (!pending) return;
+  pendingCalls.delete(callSid);
+
+  if (!['no-answer', 'busy', 'failed'].includes(callStatus)) return;
+
+  const { elderId, toNumber, attempt } = pending;
+  const tunnelUrl = process.env.TUNNEL_URL || '';
+  console.log(`[CallStatus] ${callSid} → ${callStatus} (attempt ${attempt}, elder=${elderId})`);
+
+  if (attempt === 1) {
+    console.log(`[CallStatus] Scheduling retry for elder=${elderId} in 30 min`);
+    setTimeout(async () => {
+      try { await placeCall(elderId, toNumber, tunnelUrl, 2); }
+      catch (err) { console.error('[CallStatus] Retry call failed:', err); }
+    }, 30 * 60 * 1000);
+  } else {
+    if (!elderId) {
+      console.warn('[CallStatus] Cannot flag: no elderId for this call');
+      return;
+    }
+    try {
+      const result = await recordMissedCall(elderId);
+      console.log(`[MissedCall] Flagged elder=${elderId} → risk=${result.newRiskTier}`);
+    } catch (err) {
+      console.error('[MissedCall] Failed to record missed call:', err);
+    }
   }
 });
 
@@ -282,26 +350,18 @@ app.listen(port, () => {
 });
 
 async function triggerCall() {
-  const accountSid = process.env.TWILIO_ACCOUNT_SID;
-  const authToken = process.env.TWILIO_AUTH_TOKEN;
-  const fromNumber = process.env.TWILIO_PHONE_NUMBER;
   const toNumber = process.env.USER_PHONE_NUMBER;
   const tunnelUrl = process.env.TUNNEL_URL || 'https://120157576de4e6.lhr.life';
+  const elderId = process.env.DEMO_ELDER_ID || null;
 
-  if (!accountSid || !authToken || !fromNumber || !toNumber || !tunnelUrl) {
-    console.error('[Scheduler] Missing Twilio credentials or tunnel URL.');
+  if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_PHONE_NUMBER || !toNumber) {
+    console.error('[Scheduler] Missing Twilio credentials or phone numbers.');
     return;
   }
 
   try {
-    const client = twilio(accountSid, authToken);
-    console.log(`[Scheduler] Initiating outbound call from ${fromNumber} to ${toNumber}...`);
-    const call = await client.calls.create({
-      url: `${tunnelUrl}/incoming-call`,
-      to: toNumber,
-      from: fromNumber,
-    });
-    console.log(`[Scheduler] Call successfully initiated! Call SID: ${call.sid}`);
+    const sid = await placeCall(elderId, toNumber, tunnelUrl, 1);
+    console.log(`[Scheduler] Call initiated. SID: ${sid}`);
   } catch (error: any) {
     console.error('[Scheduler] Failed to trigger call:', error);
   }
