@@ -10,3 +10,7 @@ export function getClient(token?: string) {
     }
   })
 }
+
+export function getAdminClient() {
+  return createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+}

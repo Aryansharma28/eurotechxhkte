@@ -164,13 +164,6 @@ function TodayView({ elders, visits, alerts, lang, onOpen, onVisit }) {
             <button className="btn primary" style={{ width: 'calc(100% - 8px)', margin: '8px 4px 4px' }}>{I.plus}{L(lang, 'Schedule a visit', '新增家訪')}</button>
           </div>
 
-          <div className="sec-title" style={{ marginTop: 24 }}><h2>{L(lang, 'Programme pulse', '計劃概況')}</h2></div>
-          <div className="card" style={{ padding: 18 }}>
-            <PulseStat lang={lang} label={L(lang,'Calls answered today','今日接聽')} value={`${counts.calls}/${elders.length}`} trend="" good />
-            <PulseStat lang={lang} label={L(lang,'Open risk flags','高危提示')} value={String(counts.risk)} trend="" good={counts.risk === 0} />
-            <PulseStat lang={lang} label={L(lang,'Watch flags','留意提示')} value={String(counts.watch)} trend="" good={counts.watch === 0} />
-            <PulseStat lang={lang} label={L(lang,'Visits today','今日家訪')} value={String(visits.length)} trend="" good last />
-          </div>
         </div>
       </div>
     </div>

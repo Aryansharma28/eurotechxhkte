@@ -1,77 +1,249 @@
 /* CareBridge — Family app (adult child) styles */
-.fam-stage { min-height: 100vh; display: grid; place-items: center; gap: 22px; padding: 40px 20px;
-  background: radial-gradient(120% 80% at 50% 0%, var(--green-tint) 0%, var(--bg) 55%); }
-.fam-cap { text-align: center; color: var(--ink-faint); font-size: 13px; font-family: var(--mono); }
+
+/* ================================================================
+   STAGING WRAPPER (iOS frame context)
+   ================================================================ */
+.fam-stage {
+  min-height: 100vh; display: grid; place-items: center; gap: 22px;
+  padding: 40px 20px;
+  background: radial-gradient(130% 80% at 50% 0%, var(--green-tint) 0%, var(--bg) 60%);
+}
+.fam-cap {
+  text-align: center; color: var(--ink-faint);
+  font-size: 12.5px; font-family: var(--mono);
+}
 .fam-cap b { color: var(--ink-soft); font-weight: 600; }
 
-.fam { height: 100%; display: flex; flex-direction: column; background: var(--bg);
-  font-family: var(--sans); color: var(--ink); }
-.fam-scroll { flex: 1; overflow-y: auto; padding: 58px 18px 90px; display: flex; flex-direction: column; gap: 15px; }
+/* ================================================================
+   APP SHELL
+   ================================================================ */
+.fam {
+  height: 100%; display: flex; flex-direction: column;
+  background: var(--bg); font-family: var(--sans); color: var(--ink);
+}
+.fam-scroll {
+  flex: 1; overflow-y: auto;
+  padding: 54px 18px 94px;
+  display: flex; flex-direction: column; gap: 14px;
+}
 .fam-scroll > * { flex-shrink: 0; }
 
-.fam-head { display: flex; align-items: center; justify-content: space-between; }
-.fam-hi { font-size: 14px; color: var(--ink-soft); }
-.fam-hi b { color: var(--ink); font-weight: 700; font-size: 17px; display: block; letter-spacing: -0.01em; }
-.fam-lang { display: flex; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
-.fam-lang button { border: none; background: none; padding: 5px 11px; border-radius: 999px; font-weight: 700; font-size: 12.5px; color: var(--ink-faint); cursor: pointer; }
+/* ================================================================
+   HEADER ROW
+   ================================================================ */
+.fam-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.fam-hi { font-size: 13.5px; color: var(--ink-soft); }
+.fam-hi b { color: var(--ink); font-weight: 700; font-size: 16px; display: block; letter-spacing: -0.01em; }
+
+.fam-top-right { display: flex; gap: 8px; align-items: center; }
+
+.fam-lang {
+  display: flex; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 999px; padding: 3px;
+}
+.fam-lang button {
+  border: none; background: none; padding: 5px 11px; border-radius: 999px;
+  font-weight: 700; font-size: 12px; color: var(--ink-faint); cursor: pointer;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
 .fam-lang button.on { background: var(--green); color: #fff; }
 
-/* hero status */
-.fam-hero { border-radius: 26px; padding: 24px; color: #fff; position: relative; overflow: hidden;
-  background: linear-gradient(155deg, var(--green) 0%, var(--green-deep) 100%);
-  box-shadow: 0 14px 34px oklch(0.5 0.09 158 / 0.32); }
-.fam-hero .fav { display: flex; align-items: center; gap: 13px; }
-.fam-hero .fav .ava { width: 56px; height: 56px; border-radius: 50%; border: 2.5px solid oklch(1 0 0 / 0.6);
+.fam-signout {
+  font-size: 11.5px; color: var(--ink-faint);
+  background: none; border: none; cursor: pointer; padding: 4px 2px;
+  transition: color var(--dur-fast);
+}
+.fam-signout:hover { color: var(--ink-soft); }
+
+/* ================================================================
+   HERO CARD
+   ================================================================ */
+.fam-hero {
+  border-radius: 24px; padding: 22px; color: #fff;
+  position: relative; overflow: hidden;
+  background: linear-gradient(150deg, var(--green) 0%, oklch(0.42 0.096 158) 100%);
+  box-shadow: 0 12px 32px oklch(0.5 0.09 158 / 0.30);
+}
+.fam-hero::before {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 110% -10%, oklch(1 0 0 / 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at -10% 110%, oklch(0.36 0.09 158 / 0.3) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.fam-hero .fav { display: flex; align-items: center; gap: 13px; position: relative; }
+.fam-hero .fav .ava {
+  width: 54px; height: 54px; border-radius: 50%;
+  border: 2.5px solid oklch(1 0 0 / 0.55);
   background: repeating-linear-gradient(135deg, oklch(0.92 0.04 158) 0 7px, oklch(0.96 0.02 158) 7px 14px);
-  display: grid; place-items: center; color: var(--green-ink); font-weight: 800; font-size: 22px; flex: none; }
-.fam-hero .fnm { font-size: 19px; font-weight: 800; letter-spacing: -0.01em; }
-.fam-hero .fsub { font-size: 13px; opacity: 0.85; margin-top: 2px; }
-.fam-hero .fstatus { font-size: 27px; font-weight: 800; letter-spacing: -0.02em; margin: 18px 0 6px; line-height: 1.15; }
-.fam-hero .fwhen { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; background: oklch(1 0 0 / 0.18); padding: 6px 12px; border-radius: 999px; font-weight: 600; }
-.fam-hero .fwhen svg { width: 15px; height: 15px; }
+  display: grid; place-items: center;
+  color: var(--green-ink); font-weight: 800; font-size: 21px; flex: none;
+}
+.fam-hero .fnm { font-size: 18px; font-weight: 800; letter-spacing: -0.01em; }
+.fam-hero .fsub { font-size: 12.5px; opacity: 0.82; margin-top: 2px; }
 
-/* soft note */
-.fam-note { display: flex; gap: 12px; align-items: flex-start; padding: 15px 16px; border-radius: 18px;
-  background: var(--watch-bg); border: 1px solid oklch(0.88 0.05 80); }
-.fam-note .ni { width: 34px; height: 34px; border-radius: 10px; background: oklch(1 0 0 / 0.6); color: var(--watch-ink); display: grid; place-items: center; flex: none; }
-.fam-note .nt { font-weight: 700; font-size: 14.5px; color: var(--watch-ink); }
-.fam-note .nb { font-size: 13.5px; color: var(--ink-soft); line-height: 1.45; margin-top: 3px; }
+.fam-hero .fstatus {
+  font-size: 25px; font-weight: 800; letter-spacing: -0.02em;
+  margin: 17px 0 6px; line-height: 1.15;
+  position: relative;
+}
+.fam-hero .fwhen {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12.5px; font-weight: 600;
+  background: oklch(1 0 0 / 0.16); padding: 5px 12px;
+  border-radius: 999px; position: relative;
+}
+.fam-hero .fwhen svg { width: 14px; height: 14px; }
+.fam-hero .fwhen.missed { background: oklch(0.4 0.12 27 / 0.35); }
 
-/* section card */
-.fam-card { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 18px; box-shadow: var(--shadow-sm); }
-.fam-card .fct { font-size: 12px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); font-weight: 600; margin-bottom: 14px; }
-.fam-card .fsummary { font-size: 15.5px; line-height: 1.5; color: var(--ink); }
+/* ================================================================
+   GENTLE NOTE CARD
+   ================================================================ */
+.fam-note {
+  display: flex; gap: 11px; align-items: flex-start;
+  padding: 14px 16px; border-radius: 18px;
+  background: var(--watch-bg); border: 1px solid oklch(0.88 0.05 80);
+}
+.fam-note .ni {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: oklch(0.96 0.06 80); color: var(--watch-ink);
+  display: grid; place-items: center; flex: none;
+}
+.fam-note .nt { font-weight: 700; font-size: 14px; color: var(--watch-ink); }
+.fam-note .nb { font-size: 13px; color: var(--ink-soft); line-height: 1.45; margin-top: 3px; }
 
-/* activity grid */
-.fam-acts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.fam-act { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 6px; border-radius: 16px; background: var(--surface-2); border: 1px solid var(--line-soft); }
-.fam-act .fai { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; position: relative; }
+/* ================================================================
+   SECTION CARDS
+   ================================================================ */
+.fam-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 17px;
+  box-shadow: var(--shadow-sm);
+}
+.fam-card .fct {
+  font-size: 11px; font-family: var(--mono);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--ink-faint); font-weight: 600; margin-bottom: 13px;
+}
+.fam-card .fcard-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 13px;
+}
+.fam-card .fcard-head .fct { margin-bottom: 0; }
+.fam-card .fcard-action {
+  font-size: 12px; font-weight: 700; color: var(--green);
+  background: none; border: none; cursor: pointer; padding: 2px 0;
+}
+.fam-card .fsummary { font-size: 15px; line-height: 1.55; color: var(--ink); }
+
+/* ================================================================
+   ACTIVITY GRID
+   ================================================================ */
+.fam-acts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+.fam-act {
+  display: flex; flex-direction: column; align-items: center; gap: 7px;
+  padding: 14px 6px; border-radius: 14px;
+  background: var(--surface-2); border: 1px solid var(--line-soft);
+  transition: transform var(--dur-fast);
+}
+.fam-act:active { transform: scale(0.97); }
+.fam-act .fai {
+  width: 40px; height: 40px; border-radius: 12px;
+  display: grid; place-items: center; position: relative;
+}
 .fam-act.done .fai { background: var(--stable-bg); color: var(--green-ink); }
-.fam-act.soft .fai { background: var(--watch-bg); color: var(--watch-ink); }
-.fam-act .fai svg { width: 21px; height: 21px; }
-.fam-act .fcheck { position: absolute; bottom: -3px; right: -3px; width: 18px; height: 18px; border-radius: 50%; background: var(--green); color: #fff; display: grid; place-items: center; border: 2px solid var(--surface); }
-.fam-act .fcheck svg { width: 11px; height: 11px; }
-.fam-act .fal { font-size: 12px; font-weight: 600; color: var(--ink-soft); }
+.fam-act.missed .fai { background: var(--risk-bg); color: var(--risk-ink); }
+.fam-act.soft .fai  { background: var(--bg-sink);  color: var(--ink-faint); }
+.fam-act .fai svg { width: 20px; height: 20px; }
 
-/* week dots */
+.fam-act .fcheck {
+  position: absolute; bottom: -3px; right: -3px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--green); color: #fff;
+  display: grid; place-items: center;
+  border: 2px solid var(--surface);
+}
+.fam-act .fcheck svg { width: 10px; height: 10px; }
+.fam-act .fal { font-size: 11.5px; font-weight: 600; color: var(--ink-soft); text-align: center; }
+
+/* ================================================================
+   WEEK DOTS
+   ================================================================ */
 .fam-week { display: flex; justify-content: space-between; }
-.fam-day { display: flex; flex-direction: column; align-items: center; gap: 7px; }
-.fam-day .fd { font-size: 11px; color: var(--ink-faint); font-family: var(--mono); }
-.fam-day .fdot { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; }
+.fam-day  { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.fam-day .fd { font-size: 10.5px; color: var(--ink-faint); font-family: var(--mono); }
+.fam-day .fdot {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--bg-sink);
+}
 .fam-day .fdot.done { background: var(--stable-bg); color: var(--green-ink); }
-.fam-day .fdot.done svg { width: 14px; height: 14px; }
+.fam-day .fdot.done svg { width: 13px; height: 13px; }
 .fam-day.today .fd { color: var(--green); font-weight: 700; }
 .fam-day.today .fdot { box-shadow: 0 0 0 2px var(--green); }
 
-/* help card */
-.fam-help { background: var(--green-tint); border: 1px solid var(--green-tint-2); border-radius: 22px; padding: 18px; }
-.fam-help .fht { font-weight: 800; font-size: 15px; color: var(--green-ink); }
-.fam-help .fhb { font-size: 14px; color: var(--ink-soft); line-height: 1.45; margin-top: 5px; }
+/* ================================================================
+   HELP CARD
+   ================================================================ */
+.fam-help {
+  background: var(--green-tint); border: 1px solid var(--green-tint-2);
+  border-radius: 20px; padding: 17px;
+}
+.fam-help .fht { font-weight: 800; font-size: 14.5px; color: var(--green-ink); }
+.fam-help .fhb { font-size: 13.5px; color: var(--ink-soft); line-height: 1.5; margin-top: 5px; }
 
-/* bottom action bar */
-.fam-actions { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 18px 30px; display: flex; gap: 10px;
-  background: linear-gradient(0deg, var(--bg) 65%, transparent); }
-.fam-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; border-radius: 16px; font-weight: 700; font-size: 15px; border: none; cursor: pointer; }
-.fam-btn.call { background: var(--green); color: #fff; box-shadow: 0 4px 12px oklch(0.5 0.09 158 / 0.3); }
-.fam-btn.msg { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+/* ================================================================
+   ELDER TO-DO LIST
+   ================================================================ */
+.fam-todos { display: flex; flex-direction: column; gap: 1px; }
+.fam-todo {
+  display: flex; align-items: center; gap: 11px;
+  padding: 10px 8px; border-radius: 11px;
+  transition: background var(--dur-fast);
+}
+.fam-todo:hover { background: var(--surface-2); }
+.fam-todo .ftcheck {
+  width: 21px; height: 21px; border-radius: 6px;
+  border: 1.5px solid var(--line); display: grid;
+  place-items: center; flex: none;
+}
+.fam-todo.done .ftcheck {
+  background: var(--stable-bg); border-color: var(--green);
+  color: var(--green-ink);
+}
+.fam-todo.done .ftcheck svg { width: 12px; height: 12px; }
+.fam-todo .ftt { font-size: 13.5px; line-height: 1.4; color: var(--ink); }
+.fam-todo.done .ftt { color: var(--ink-faint); text-decoration: line-through; }
+
+.fam-empty { font-size: 13px; color: var(--ink-faint); padding: 6px 2px; }
+
+/* ================================================================
+   BOTTOM ACTION BAR
+   ================================================================ */
+.fam-actions {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 14px 18px 32px; display: flex; gap: 10px;
+  background: linear-gradient(0deg, var(--bg) 60%, oklch(0.975 0.007 150 / 0) 100%);
+}
+.fam-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 14px; border-radius: 16px;
+  font-weight: 700; font-size: 14.5px; border: none; cursor: pointer;
+  transition: transform var(--dur-fast), box-shadow var(--dur);
+}
+.fam-btn:active { transform: scale(0.97); }
+.fam-btn.call {
+  background: var(--green); color: #fff;
+  box-shadow: 0 4px 14px oklch(0.5 0.09 158 / 0.28);
+}
+.fam-btn.call:hover { box-shadow: var(--shadow-green); }
+.fam-btn.msg {
+  background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line);
+}
+.fam-btn.msg:hover { background: var(--surface-2); }
 .fam-btn svg { width: 18px; height: 18px; }

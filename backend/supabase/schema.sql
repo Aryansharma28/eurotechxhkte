@@ -25,7 +25,8 @@ create table if not exists workers (
   name_zh     text,
   role_en     text,
   role_zh     text,
-  team        text
+  team        text,
+  phone       text
 );
 alter table workers enable row level security;
 create policy "worker sees own row" on workers for select using (profile_id = auth.uid());
