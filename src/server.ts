@@ -4,7 +4,7 @@ import { voiceAgent } from './mastra/agent';
 import { PassThrough } from 'stream';
 import * as dotenv from 'dotenv';
 import twilio from 'twilio';
-import { processIncomingAudio } from './services/metrics';
+import { analyzeTurn, aggregateConversationMetrics, saveConversationResult } from './services/metrics';
 
 // Load environment variables
 dotenv.config();
@@ -94,6 +94,9 @@ app.ws('/media-stream', async (ws, req) => {
   console.log(`[WebSocket] Client connected to /media-stream`);
   let streamSid: string | null = null;
   let isConnected = false;
+  let userAudioChunks: Buffer[] = [];
+  const conversationTurns: Parameters<typeof aggregateConversationMetrics>[0] = [];
+  const callTimestamp = new Date().toISOString();
 
   // We use a PassThrough stream to simulate a microphone stream for Mastra
   const inputStream = new PassThrough();
@@ -116,10 +119,8 @@ app.ws('/media-stream', async (ws, req) => {
         const pcmBuffer = transcodeTwilioToGemini(muLawBuffer);
         inputStream.write(pcmBuffer);
 
-        // Process audio metrics asynchronously
-        processIncomingAudio(muLawBuffer).catch(err => {
-          console.error('[Metrics] Error processing audio chunk:', err);
-        });
+        // Accumulate user speech turn audio
+        userAudioChunks.push(pcmBuffer);
       } else if (data.event === 'stop') {
         console.log(`[Twilio] Stream stopped.`);
         ws.close();
@@ -142,6 +143,14 @@ app.ws('/media-stream', async (ws, req) => {
 
     // 4. Listen for agent's voice output and errors
     const onSpeaking = (data: any) => {
+      // Process accumulated user audio at the end of the user's speech turn
+      if (userAudioChunks.length > 0) {
+        const turnBuffer = Buffer.concat(userAudioChunks);
+        userAudioChunks = []; // Clear buffer for next turn
+        const turn = analyzeTurn(turnBuffer);
+        if (turn) conversationTurns.push(turn);
+      }
+
       const audio = data?.audio;
       if (audio) {
         console.log(`[Gemini] Agent spoke a chunk of size: ${audio.length || audio.byteLength} bytes`);
@@ -181,6 +190,23 @@ app.ws('/media-stream', async (ws, req) => {
     ws.on('close', () => {
       console.log(`[WebSocket] Client disconnected.`);
       inputStream.end();
+
+      // Process any remaining user audio
+      if (userAudioChunks.length > 0) {
+        const turnBuffer = Buffer.concat(userAudioChunks);
+        userAudioChunks = [];
+        const turn = analyzeTurn(turnBuffer);
+        if (turn) conversationTurns.push(turn);
+      }
+
+      // Aggregate all turns and save a single conversation result
+      const result = aggregateConversationMetrics(conversationTurns, callTimestamp);
+      if (result) {
+        saveConversationResult(result).catch(err => {
+          console.error('[Metrics] Error saving conversation result:', err);
+        });
+      }
+
       voiceAgent.voice.off('speaking', onSpeaking);
       voiceAgent.voice.off('error', onError);
       voiceAgent.voice.close();

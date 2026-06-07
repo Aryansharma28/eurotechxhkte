@@ -1,0 +1,36 @@
+[
+  {
+    "timestamp": "2026-06-07T01:32:37.970Z",
+    "durationSeconds": 5.52,
+    "rms": 0.01465,
+    "averagePitch": 179.7,
+    "pitchStdDev": 93.66,
+    "jitter": 0.23584,
+    "shimmer": 0.16075,
+    "hnr": 1.49,
+    "parkinsonSignal": 60
+  },
+  {
+    "timestamp": "2026-06-07T01:32:53.307Z",
+    "durationSeconds": 13.98,
+    "rms": 0.03873,
+    "averagePitch": 187.3,
+    "pitchStdDev": 94.36,
+    "jitter": 0.14874,
+    "shimmer": 0.18412,
+    "hnr": 1.46,
+    "parkinsonSignal": 30
+  },
+  {
+    "callTimestamp": "2026-06-07T01:41:20.154Z",
+    "callEndTimestamp": "2026-06-07T01:41:55.162Z",
+    "totalDurationSeconds": 27.04,
+    "turnCount": 6,
+    "avgJitter": 0.21303,
+    "avgShimmer": 0.2648,
+    "avgHnr": 1.05,
+    "avgPitchStdDev": 86.19,
+    "avgRms": 0.04615,
+    "parkinsonSignal": 50
+  }
+]
