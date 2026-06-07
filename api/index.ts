@@ -194,6 +194,58 @@ app.post('/visits', async (c) => {
   return c.json({ ok: true, new_risk_tier: newRisk })
 })
 
+// ── /api/simulate-call (mock a daily check-in — no real phone call) ─────────────
+
+app.post('/simulate-call', async (c) => {
+  const token = c.get('token')
+  const userId = await getUserId(token)
+  if (!userId) return c.json({ error: 'Unauthorized' }, 401)
+
+  const { elder_id } = await c.req.json().catch(() => ({} as any))
+  if (!elder_id) return c.json({ error: 'elder_id required' }, 400)
+
+  const admin = getAdminClient()
+  const now = new Date()
+  const today = now.toISOString().split('T')[0]
+
+  // Three mock outcomes so repeated calls visibly change the caseload.
+  const outcomes = [
+    { en: 'Took all medication and ate well. Slept soundly and in good spirits.',
+      zh: '已服藥，食得好，瞓得好，精神不錯。', miss: [] as string[], flag: null as any },
+    { en: 'Medication taken and had a light breakfast. Walked around the flat, a little tired.',
+      zh: '已服藥，食咗少少早餐，喺屋企行咗下，有少少攰。', miss: ['sleep'], flag: null as any },
+    { en: 'Felt dizzy when standing this morning, otherwise comfortable.',
+      zh: '今早起身時感到頭暈，其餘大致舒服。', miss: ['walk'],
+      flag: { severity: 'watch', label_en: 'Reported dizziness on the daily call', label_zh: '每日電話報告頭暈' } },
+  ]
+  const o = outcomes[Math.floor(Math.random() * outcomes.length)]
+
+  const { data: call, error: callErr } = await admin.from('daily_calls').insert({
+    elder_id, state: 'done', scheduled_at: now.toISOString(), completed_at: now.toISOString(),
+    channel: 'simulated', summary_en: o.en, summary_zh: o.zh,
+  }).select().single()
+  if (callErr) return c.json({ error: callErr.message }, 500)
+
+  await admin.from('activity_records').upsert(
+    ['med', 'meal', 'walk', 'water', 'sleep', 'mood'].map(k => ({
+      elder_id, record_date: today, activity_key: k,
+      status: o.miss.includes(k) ? 'missed' : 'done', source: 'call',
+    })),
+    { onConflict: 'elder_id,record_date,activity_key' })
+
+  if (o.flag) {
+    await admin.from('flags').insert({ elder_id, kind: 'symptom', source: 'simulated', resolved: false, ...o.flag })
+  }
+
+  const { data: openFlags } = await admin.from('flags').select('severity').eq('elder_id', elder_id).eq('resolved', false)
+  let risk = 'stable'
+  if (openFlags?.some((f: any) => f.severity === 'risk')) risk = 'risk'
+  else if (openFlags?.some((f: any) => f.severity === 'watch')) risk = 'watch'
+  await admin.from('elders').update({ risk_tier: risk }).eq('id', elder_id)
+
+  return c.json({ ok: true, elder_id, summary_en: o.en, new_risk_tier: risk, call_id: call?.id })
+})
+
 // ── /api/flags ────────────────────────────────────────────────────────────────
 
 app.get('/flags', async (c) => {

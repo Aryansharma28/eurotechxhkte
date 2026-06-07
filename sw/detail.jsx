@@ -128,7 +128,12 @@ function ElderDetail({ id, lang, onClose, onVisit, onReload }) {
           </div>
           <div className="dh-actions">
             <button className="btn primary" onClick={() => onVisit(e.id)}>{I.map}{L(lang, 'Start home visit', '開始家訪')}</button>
-            <button className="btn ghost">{I.phone}{L(lang, 'Call now', '立即致電')}</button>
+            <button className="btn ghost" onClick={async (ev) => {
+              const btn = ev.currentTarget; btn.disabled = true
+              try { await API.post('/api/simulate-call', { elder_id: e.id }); onReload && onReload() }
+              catch (err) { alert('Simulate failed: ' + err.message) }
+              finally { btn.disabled = false }
+            }}>{I.phone}{L(lang, 'Simulate call', '模擬通話')}</button>
             <button className="btn ghost">{I.note}{L(lang, 'Add note', '新增記錄')}</button>
           </div>
         </div>
