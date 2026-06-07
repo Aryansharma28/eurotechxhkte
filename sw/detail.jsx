@@ -162,65 +162,116 @@ function ElderDetail({ id, lang, onClose, onVisit, onReload }) {
             </div>
           </div>
 
-          {/* ── Live voice biomarkers (from real calls) ── */}
-          {(() => {
-            const callsWithVoice = (e.recent_calls || [])
-              .filter(c => c.parkinson_signal != null || c.neurological_decline_signal != null)
-              .reverse() // oldest-first so sparkline reads left→right in time
+          {/* ── Voice biomarkers: live from calls, mock baseline fallback ── */}
+          {(typeof BIOMARKERS !== 'undefined') && BIOMARKERS[e.id] && (() => {
+            const thresholds = (typeof NEURO_THRESHOLDS !== 'undefined') ? NEURO_THRESHOLDS : {}
+            const keys = (typeof BIOMARKER_KEYS !== 'undefined') ? BIOMARKER_KEYS : Object.keys(thresholds)
 
-            if (callsWithVoice.length < 1) return null
+            // recent_calls arrive DESC (newest first). Take up to 7, reverse for chronological order.
+            const liveCalls = (e.recent_calls || []).slice(0, 7).reverse()
 
-            const parkVals  = callsWithVoice.map(c => c.parkinson_signal).filter(v => v != null)
-            const neuroVals = callsWithVoice.map(c => c.neurological_decline_signal).filter(v => v != null)
-            const parkLatest  = parkVals[parkVals.length - 1]
-            const neuroLatest = neuroVals[neuroVals.length - 1]
-            const parkLevel  = parkLatest  >= 55 ? 'risk' : parkLatest  >= 30 ? 'watch' : 'ok'
-            const neuroLevel = neuroLatest >= 55 ? 'risk' : neuroLatest >= 30 ? 'watch' : 'ok'
-            const overallLevel = (parkLevel === 'risk' || neuroLevel === 'risk') ? 'risk'
-              : (parkLevel === 'watch' || neuroLevel === 'watch') ? 'watch' : 'ok'
+            // Determine which fields have real data from actual calls
+            const liveFields = new Set()
+            if (liveCalls.some(c => c.pause_ratio != null))                    liveFields.add('pauses')
+            if (liveCalls.some(c => c.parkinson_signal != null))               liveFields.add('parkinson')
+            if (liveCalls.some(c => c.neurological_decline_signal != null))    liveFields.add('neuroDec')
+            if (liveCalls.some(c => c.rate != null))                           liveFields.add('rate')
+            if (liveCalls.some(c => c.pitch != null))                          liveFields.add('pitch')
+            if (liveCalls.some(c => c.tremor != null))                         liveFields.add('tremor')
+            if (liveCalls.some(c => c.fluency != null))                        liveFields.add('fluency')
 
-            const numColor = lv => lv === 'risk' ? 'var(--risk-ink)' : lv === 'watch' ? 'var(--watch-ink)' : 'var(--ink)'
+            // Mapping from DB column name → biomarker key
+            const LIVE_MAP = { pauses: 'pause_ratio', parkinson: 'parkinson_signal',
+              neuroDec: 'neurological_decline_signal', rate: 'rate',
+              pitch: 'pitch', tremor: 'tremor', fluency: 'fluency' }
+
+            // Start with mock baseline, overlay live values per-day where not null
+            let bm = BIOMARKERS[e.id]
+            if (liveFields.size > 0) {
+              const week = bm.week.map((mockDay, i) => {
+                const lc = liveCalls[i]
+                if (!lc) return mockDay
+                const merged = { ...mockDay }
+                liveFields.forEach(k => {
+                  const col = LIVE_MAP[k]
+                  if (lc[col] != null) merged[k] = lc[col]
+                })
+                return merged
+              })
+              const todayCall = liveCalls[liveCalls.length - 1] || {}
+              const todayMerged = { ...bm.today }
+              liveFields.forEach(k => {
+                const col = LIVE_MAP[k]
+                if (todayCall[col] != null) todayMerged[k] = todayCall[col]
+              })
+              const updatedAlerts = { ...bm.metricAlerts }
+              if (typeof metricLevel === 'function') {
+                liveFields.forEach(k => { updatedAlerts[k] = metricLevel(k, todayMerged[k]) })
+              }
+              const lvls = Object.values(updatedAlerts)
+              bm = { ...bm, week, today: todayMerged, metricAlerts: updatedAlerts,
+                alertLevel: lvls.includes('risk') ? 'risk' : lvls.includes('watch') ? 'watch' : null }
+            }
 
             return (
               <div className="dcard card">
                 <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   {I.wave} {L(lang, 'Voice biomarkers', '語音生物標誌')}
-                  <span style={{ fontSize: 10, color: 'var(--stable)', fontWeight: 600, background: 'var(--stable-bg)', borderRadius: 6, padding: '2px 7px' }}>LIVE</span>
+                  {liveFields.size > 0 && (
+                    <span style={{ fontSize: 10, color: 'var(--stable)', fontWeight: 600, background: 'var(--stable-bg)', borderRadius: 6, padding: '2px 7px' }}>LIVE</span>
+                  )}
                 </h3>
-                {overallLevel !== 'ok' && (
-                  <div className={'riskbanner ' + overallLevel} style={{ marginBottom: 14 }}>
-                    <div className="aic" style={{ color: numColor(overallLevel) }}>{I.alert}</div>
-                    <div><div className="rt">{overallLevel === 'risk' ? L(lang, 'Notable voice change — consider review', '語音出現顯著變化 — 考慮複診') : L(lang, 'Voice pattern shift — monitor closely', '語音模式有輕微偏移 — 密切跟進')}</div></div>
+                {bm.alertLevel && (
+                  <div className={'riskbanner ' + bm.alertLevel} style={{ marginBottom: 14 }}>
+                    <div className="aic" style={{ color: bm.alertLevel === 'risk' ? 'var(--risk-ink)' : 'var(--watch-ink)' }}>{I.alert}</div>
+                    <div><div className="rt">{bm.alertLevel === 'risk' ? L(lang, 'Notable voice change — consider review', '語音出現顯著變化 — 考慮複診') : L(lang, 'Voice pattern shift — monitor closely', '語音模式有輕微偏移 — 密切跟進')}</div></div>
                   </div>
                 )}
-                <div style={{ display: 'flex', gap: 16 }}>
-                  {parkVals.length >= 1 && (
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      <div style={{ fontSize: 10, color: 'var(--ink-faint)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                        {L(lang, 'Parkinson signal', '柏金遜信號')}
+                <div style={{ display: 'flex', gap: 12, justifyContent: 'space-between', flexWrap: 'wrap' }}>
+                  {keys.map(k => {
+                    const t = thresholds[k]
+                    if (!t) return null
+                    const values   = bm.week.map(d => d[k])
+                    const level    = bm.metricAlerts[k]
+                    const today    = bm.today[k]
+                    const base     = bm.baseline[k]
+                    const delta    = today - base
+                    const pct      = Math.abs(delta / (base || 1) * 100).toFixed(0)
+                    const worse    = t.higherBetter ? delta < 0 : delta > 0
+                    const numColor = level === 'risk' ? 'var(--risk-ink)' : level === 'watch' ? 'var(--watch-ink)' : 'var(--ink)'
+                    const isLive   = liveFields.has(k)
+                    return (
+                      <div key={k} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, minWidth: 58 }}>
+                        <div style={{ fontSize: 10, color: 'var(--ink-faint)', fontWeight: 600, textTransform: 'uppercase',
+                                      letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                          {L(lang, t.label_en, t.label_zh)}
+                          {isLive && <span style={{ marginLeft: 3, fontSize: 8, color: 'var(--stable)', fontWeight: 900 }}>●</span>}
+                        </div>
+                        <DrawerSparkline values={values} level={level} />
+                        <span style={{ fontSize: 15, fontWeight: 800, fontFamily: 'var(--mono)', color: numColor, lineHeight: 1 }}>
+                          {k === 'pauses' ? today.toFixed(2) : String(today)}
+                          <span style={{ fontSize: 9, fontWeight: 400, color: 'var(--ink-faint)', marginLeft: 2 }}>{t.unit}</span>
+                        </span>
+                        {+pct > 2
+                          ? <span style={{ fontSize: 10, fontWeight: 600, color: level === 'ok' ? 'var(--ink-faint)' : numColor, fontFamily: 'var(--mono)' }}>
+                              {worse ? '↓' : '↑'} {pct}%
+                            </span>
+                          : <span style={{ fontSize: 10, color: 'var(--ink-faint)' }}>stable</span>
+                        }
+                        {level !== 'ok' && (
+                          <span className={'pill ' + level} style={{ fontSize: 9, padding: '1px 6px' }}>
+                            <span className="dot" />{level}
+                          </span>
+                        )}
                       </div>
-                      <DrawerSparkline values={parkVals} level={parkLevel} width={110} height={34} />
-                      <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--mono)', color: numColor(parkLevel), lineHeight: 1 }}>
-                        {parkLatest}<span style={{ fontSize: 10, color: 'var(--ink-faint)', marginLeft: 2 }}>/100</span>
-                      </div>
-                      {parkLevel !== 'ok' && <span className={'pill ' + parkLevel} style={{ fontSize: 9, padding: '1px 6px', alignSelf: 'flex-start' }}><span className="dot"/>{parkLevel}</span>}
-                    </div>
-                  )}
-                  {neuroVals.length >= 1 && (
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      <div style={{ fontSize: 10, color: 'var(--ink-faint)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                        {L(lang, 'Neuro decline', '神經退化')}
-                      </div>
-                      <DrawerSparkline values={neuroVals} level={neuroLevel} width={110} height={34} />
-                      <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--mono)', color: numColor(neuroLevel), lineHeight: 1 }}>
-                        {neuroLatest}<span style={{ fontSize: 10, color: 'var(--ink-faint)', marginLeft: 2 }}>/100</span>
-                      </div>
-                      {neuroLevel !== 'ok' && <span className={'pill ' + neuroLevel} style={{ fontSize: 9, padding: '1px 6px', alignSelf: 'flex-start' }}><span className="dot"/>{neuroLevel}</span>}
-                    </div>
-                  )}
+                    )
+                  })}
                 </div>
-                <div style={{ marginTop: 10, paddingTop: 10, borderTop: '0.5px solid var(--line)', fontSize: 11, color: 'var(--ink-faint)', fontFamily: 'var(--mono)' }}>
-                  {L(lang, `${callsWithVoice.length} call${callsWithVoice.length !== 1 ? 's' : ''} · refreshes every 5 s`, `${callsWithVoice.length} 通通話 · 每 5 秒更新`)}
+                <div style={{ marginTop: 12, paddingTop: 10, borderTop: '0.5px solid var(--line)', fontSize: 11, color: 'var(--ink-faint)', fontFamily: 'var(--mono)' }}>
+                  {liveFields.size > 0
+                    ? L(lang, `● live · pause ratio from real calls · ${liveCalls.length} day window`, `● 實時 · 停頓率來自真實通話 · ${liveCalls.length} 天視窗`)
+                    : L(lang, 'Baseline data · ● live metrics appear after calls complete', '基準數據 · ● 通話完成後顯示實時指標')
+                  }
                 </div>
               </div>
             )

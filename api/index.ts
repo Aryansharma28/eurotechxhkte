@@ -89,16 +89,29 @@ app.get('/elders/:id', async (c) => {
 
   const weekAgo = new Date(Date.now() - 7 * 86_400_000).toISOString().split('T')[0]
 
-  const [{ data: activities }, { data: vitals }, { data: recent_calls }, { data: care_plan }, { data: family }] =
+  const [{ data: activities }, { data: vitals }, { data: care_plan }, { data: family }] =
     await Promise.all([
       sb.from('activity_records').select('*').eq('elder_id', id).gte('record_date', weekAgo).order('record_date'),
       sb.from('vitals').select('*').eq('elder_id', id).order('measured_at', { ascending: false }),
-      sb.from('daily_calls')
-        .select('scheduled_at,state,summary_en,summary_zh,pause_ratio,speech_ms,parkinson_signal,neurological_decline_signal,rate,pitch,tremor,fluency')
-        .eq('elder_id', id).order('scheduled_at', { ascending: false }).limit(14),
       sb.from('care_plan_items').select('*').eq('elder_id', id),
       sb.from('family_members').select('name_en,name_zh,phone,relationship_en').eq('elder_id', id),
     ])
+
+  // daily_calls: prefer the voice-metric columns, but fall back to base columns if the
+  // add_voice_metrics.sql migration hasn't been applied yet (otherwise a missing
+  // column 500s the whole drawer).
+  let recent_calls: any[] = []
+  const callsFull = await sb.from('daily_calls')
+    .select('scheduled_at,state,summary_en,summary_zh,pause_ratio,speech_ms,parkinson_signal,neurological_decline_signal,rate,pitch,tremor,fluency')
+    .eq('elder_id', id).order('scheduled_at', { ascending: false }).limit(14)
+  if (callsFull.error) {
+    const callsBase = await sb.from('daily_calls')
+      .select('scheduled_at,state,summary_en,summary_zh')
+      .eq('elder_id', id).order('scheduled_at', { ascending: false }).limit(14)
+    recent_calls = callsBase.data || []
+  } else {
+    recent_calls = callsFull.data || []
+  }
 
   return c.json({
     ...elder,
