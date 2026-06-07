@@ -99,7 +99,7 @@ function ElderDetail({ id, lang, onClose, onVisit, onReload }) {
             <div style={{ flex: 1 }}>
               <div className="dnm">{L(lang, e.name_en, e.name_zh)} <span className="dzh">{L(lang, e.name_zh, e.name_en)}</span></div>
               <div className="dmeta">
-                {e.age}{L(lang, ' yrs', ' 歲')} · {L(lang, e.sex === 'F' ? 'Female' : 'Male', e.sex === 'F' ? '女' : '男')} · {L(lang, `Discharged ${e.day_since_discharge} days ago`, `出院第 ${e.day_since_discharge} 天`)} · {L(lang, e.lives_en, e.lives_zh)}
+                {e.age}{L(lang, ' yrs', ' 歲')} · {L(lang, e.sex === 'F' ? 'Female' : 'Male', e.sex === 'F' ? '女' : '男')} · {L(lang, `Discharged ${e.day_since_discharge ?? '?'} days ago`, `出院第 ${e.day_since_discharge ?? '?'} 天`)} · {L(lang, e.lives_en, e.lives_zh)}
               </div>
             </div>
           </div>
@@ -127,8 +127,11 @@ function ElderDetail({ id, lang, onClose, onVisit, onReload }) {
           <div className="dcard card">
             <h3>{I.trend} {L(lang, 'Latest vitals', '最新生命表徵')}</h3>
             <div className="vitals">
-              {(e.vitals || []).map(v => (
-                <div key={v.id} className={'vital ' + (v.status || 'ok')}>
+              {Object.values((e.vitals || []).reduce((acc, v) => {
+                if (!acc[v.vital_key] || v.measured_at > acc[v.vital_key].measured_at) acc[v.vital_key] = v
+                return acc
+              }, {})).map(v => (
+                <div key={v.vital_key} className={'vital ' + (v.status || 'ok')}>
                   <div className="vk">{v.vital_key}</div>
                   <div className="vv">{v.value}</div>
                 </div>
@@ -154,7 +157,12 @@ function ElderDetail({ id, lang, onClose, onVisit, onReload }) {
           <div className="dcard card">
             <h3>{I.check} {L(lang, 'Care plan', '照顧計劃')}</h3>
             <div className="plan">
-              {(e.care_plan || []).map((p, i) => (
+              {Object.values((e.care_plan || []).reduce((acc, p) => {
+                // Normalize key: lowercase, strip punctuation, first 28 chars — catches near-duplicate seed rows
+                const key = (p.text_en || '').toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/\s+/g, ' ').slice(0, 28).trim()
+                if (!acc[key]) acc[key] = p
+                return acc
+              }, {})).map((p, i) => (
                 <div key={i} className={'planitem ' + (p.done ? 'done' : '')}>
                   <span className="pcheck">{p.done && I.check}</span>
                   <span className="pt">{p.text_en}</span>

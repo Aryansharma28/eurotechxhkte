@@ -13,6 +13,23 @@
 </head>
 <body>
 <div id="root"></div>
+<script>
+  // Role guard — redirect to login if session is missing or role isn't 'family'
+  ;(async () => {
+    const _sb = window.supabase.createClient(
+      'https://waeoxrhjrdiwknlokiai.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhZW94cmhqcmRpd2tubG9raWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzM1MzksImV4cCI6MjA5NjM0OTUzOX0.mGYykwWCbts4Yn55QdcIkTEtOp-XAZJh-v8AMT8R_R8'
+    )
+    const { data } = await _sb.auth.getSession()
+    const role = data?.session?.user?.user_metadata?.role
+    if (role && role !== 'family') {
+      // Worker hit the family app — send them to the dashboard
+      window.location.href = 'Social Worker Dashboard.html'
+    } else if (!role) {
+      window.location.href = 'login.html'
+    }
+  })()
+</script>
 <script src="sw/api.js"></script>
 <script type="text/babel" src="sw/atoms.jsx"></script>
 <script type="text/babel" src="frames/ios-frame.jsx"></script>

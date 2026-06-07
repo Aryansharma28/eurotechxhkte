@@ -26,6 +26,23 @@ const ACTS = [
 const DAYS    = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const DAYS_ZH = ["一","二","三","四","五","六","日"];
 </script>
+<script>
+  // Role guard — redirect to login if session is missing or role isn't 'worker'
+  ;(async () => {
+    const _sb = window.supabase.createClient(
+      'https://waeoxrhjrdiwknlokiai.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhZW94cmhqcmRpd2tubG9raWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzM1MzksImV4cCI6MjA5NjM0OTUzOX0.mGYykwWCbts4Yn55QdcIkTEtOp-XAZJh-v8AMT8R_R8'
+    )
+    const { data } = await _sb.auth.getSession()
+    const role = data?.session?.user?.user_metadata?.role
+    if (role && role !== 'worker') {
+      // Family member hit the worker dashboard — send them to their view
+      window.location.href = 'Family App.html'
+    } else if (!role) {
+      window.location.href = 'login.html'
+    }
+  })()
+</script>
 <script src="sw/api.js"></script>
 <script type="text/babel" src="sw/atoms.jsx"></script>
 <script type="text/babel" src="sw/today.jsx"></script>

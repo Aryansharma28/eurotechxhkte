@@ -75,8 +75,12 @@ function FamilyApp() {
 
   React.useEffect(() => {
     API.restoreSession().then(session => {
-      if (session) { setAuthed(true); loadData() }
-      else setChecking(false)
+      // Only auto-auth if the restored session belongs to a family member
+      if (session && session.role === 'family') { setAuthed(true); loadData() }
+      else {
+        if (session) API.signOut() // clear stale worker/other session
+        setChecking(false)
+      }
     })
   }, [])
 

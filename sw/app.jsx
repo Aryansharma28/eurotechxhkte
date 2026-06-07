@@ -126,7 +126,7 @@ function Dashboard() {
     { k: 'today',    en: 'Today',    zh: '今日',  ic: I.home },
     { k: 'caseload', en: 'Caseload', zh: '個案',  ic: I.people },
     { k: 'visits',   en: 'Visits',   zh: '家訪',  ic: I.visit },
-    { k: 'alerts',   en: 'Alerts',   zh: '提示',  ic: I.bell,  badge: alerts.filter(a => a.severity === 'risk').length || null },
+    { k: 'alerts',   en: 'Alerts',   zh: '提示',  ic: I.bell,  badge: alerts.length || null },
     { k: 'messages', en: 'Messages', zh: '訊息',  ic: I.chat },
   ]
 
