@@ -14,3 +14,14 @@ export function getClient(token?: string) {
 export function getAdminClient() {
   return createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 }
+
+// Verify a Supabase JWT and return the authenticated user's id.
+// This validates the token with Supabase (defense-in-depth beyond RLS) and gives us
+// a concrete user id to scope identity lookups by — instead of a bare `.single()`
+// that trusts RLS to leave exactly one visible row.
+export async function getUserId(token: string): Promise<string | null> {
+  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  const { data, error } = await sb.auth.getUser(token)
+  if (error) return null
+  return data.user?.id ?? null
+}

@@ -1,6 +1,11 @@
 import 'dotenv/config'
-// Windows dev: disable TLS cert revocation check (Supabase cert chain issue on schannel)
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+// OPT-IN ONLY: disables TLS certificate verification process-wide. Some Windows dev
+// setups hit a Supabase cert-chain issue on schannel; set ALLOW_INSECURE_TLS=1 in a
+// local .env to work around it. NEVER enable this in any deployed environment.
+if (process.env.ALLOW_INSECURE_TLS === '1') {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+  console.warn('⚠️  TLS certificate verification DISABLED (ALLOW_INSECURE_TLS=1). Local dev only — never in production.')
+}
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'

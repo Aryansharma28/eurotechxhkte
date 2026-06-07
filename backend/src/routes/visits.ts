@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { getClient } from '../lib/supabase.js'
+import { getClient, getUserId } from '../lib/supabase.js'
 
 type Env = { Variables: { token: string } }
 const visits = new Hono<Env>()
@@ -10,8 +10,10 @@ visits.get('/', async (c) => {
   const sb = getClient(token)
   const today = new Date().toISOString().split('T')[0]
 
-  // get worker id
-  const { data: worker } = await sb.from('workers').select('id').single()
+  // resolve the authenticated worker by user id (not a bare .single())
+  const userId = await getUserId(token)
+  if (!userId) return c.json({ error: 'Unauthorized' }, 401)
+  const { data: worker } = await sb.from('workers').select('id').eq('profile_id', userId).maybeSingle()
   if (!worker) return c.json({ error: 'Worker not found' }, 403)
 
   const { data, error } = await sb.from('visits')
@@ -32,8 +34,10 @@ visits.post('/', async (c) => {
   const body = await c.req.json()
   const { elder_id, notes, checked_acts, quick_flags, visit_id } = body
 
-  // get worker id
-  const { data: worker } = await sb.from('workers').select('id').single()
+  // resolve the authenticated worker by user id (not a bare .single())
+  const userId = await getUserId(token)
+  if (!userId) return c.json({ error: 'Unauthorized' }, 401)
+  const { data: worker } = await sb.from('workers').select('id').eq('profile_id', userId).maybeSingle()
   if (!worker) return c.json({ error: 'Worker not found' }, 403)
 
   const today = new Date().toISOString().split('T')[0]

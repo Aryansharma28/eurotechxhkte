@@ -210,7 +210,7 @@ function ElderDetail({ id, lang, onClose, onVisit, onReload }) {
                   })}
                 </div>
                 <div style={{ marginTop: 12, paddingTop: 10, borderTop: '0.5px solid var(--line)', fontSize: 11, color: 'var(--ink-faint)', fontFamily: 'var(--mono)' }}>
-                  {L(lang, 'Voice biomarkers · daily call · sparklines = 7 days · baseline = days 1–7', '語音生物標誌 · 每日通話 · 趨勢圖＝7天 · 基準＝第1–7天')}
+                  {L(lang, 'Illustrative sample data — not yet from live calls. (Pause ratio is now measured per real call.)', '示例數據 — 暫未來自實時通話。（每次真實通話現已量度停頓比率。）')}
                 </div>
               </div>
             )

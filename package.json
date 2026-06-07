@@ -8,12 +8,14 @@
     "dev": "node server.js",
     "voice": "ts-node-dev --respawn --transpile-only src/server.ts",
     "voice:build": "tsc",
-    "voice:start": "node dist/server.js"
+    "voice:start": "node dist/server.js",
+    "test:checkin": "tsc && node dist/test-checkin.js"
   },
   "dependencies": {
     "@mastra/core": "latest",
-"@mastra/voice-google-gemini-live": "^0.12.0",
+    "@mastra/voice-google-gemini-live": "^0.12.0",
     "@mastra/voice-openai-realtime": "latest",
+    "@supabase/supabase-js": "^2.107.0",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-ws": "^5.0.2",

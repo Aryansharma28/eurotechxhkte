@@ -103,7 +103,7 @@ function VoiceInsight({ elderId, firstName, lang }) {
       </div>
       <div style={{ fontSize: 14, color: "var(--ink-soft)", lineHeight: 1.6 }}>{msg}</div>
       <div style={{ fontSize: 11, color: "var(--ink-faint)", marginTop: 8, fontFamily: "var(--mono)" }}>
-        {t("AI · from daily call · 14-day baseline", "AI · 每日通話 · 14天基準")}
+        {t("Illustrative sample — not from a live call yet", "示例數據 — 暫未來自實時通話")}
       </div>
     </div>
   )

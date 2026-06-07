@@ -4,7 +4,9 @@ import { voiceAgent } from './mastra/agent';
 import { PassThrough } from 'stream';
 import * as dotenv from 'dotenv';
 import twilio from 'twilio';
-import { processIncomingAudio } from './services/metrics';
+import { processIncomingAudio, resetCallMetrics, getCallMetrics } from './services/metrics';
+import { startCallSession, endCallSession, callSession } from './services/callSession';
+import { recordCheckIn, findElderByPhone, CheckInPayload } from './services/checkin';
 
 // Load environment variables
 dotenv.config();
@@ -72,14 +74,27 @@ function transcodeGeminiToTwilio(pcmBuffer: Buffer): Buffer {
 // ----------------------------------------------
 
 // Handle incoming Twilio call
-app.post('/incoming-call', (req, res) => {
+app.post('/incoming-call', async (req, res) => {
   const host = req.headers.host;
   console.log(`[Twilio] Incoming call received.`);
-  
+
+  // Decide which elder this call is for. Outbound calls placed via /make-call already set
+  // the session; for any other call, resolve by the caller's number, falling back to
+  // DEMO_ELDER_ID so the demo always has someone to log against.
+  if (!callSession.elderId) {
+    let elderId: string | null = process.env.DEMO_ELDER_ID || null;
+    const from = (req.body && req.body.From) as string | undefined;
+    if (from) {
+      try { elderId = (await findElderByPhone(from)) || elderId; }
+      catch (e) { console.warn('[Twilio] Could not resolve elder by phone:', e); }
+    }
+    startCallSession(elderId);
+  }
+
   // Respond with TwiML to connect the call to our WebSocket stream
   const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say>Connecting to Gemini AI support...</Say>
+  <Say>Connecting your CareBridge check-in call.</Say>
   <Connect>
     <Stream url="wss://${host}/media-stream" />
   </Connect>
@@ -110,16 +125,23 @@ app.ws('/media-stream', async (ws, req) => {
       if (data.event === 'start') {
         streamSid = data.start.streamSid;
         console.log(`[Twilio] Stream started. streamSid: ${streamSid}`);
+        // Fresh acoustic metrics for this call; ensure an elder is set as a last resort.
+        resetCallMetrics();
+        if (!callSession.elderId && process.env.DEMO_ELDER_ID) {
+          startCallSession(process.env.DEMO_ELDER_ID);
+        }
       } else if (data.event === 'media') {
         // Convert Twilio 8kHz mu-law to Gemini 16kHz PCM before writing to inputStream
         const muLawBuffer = Buffer.from(data.media.payload, 'base64');
         const pcmBuffer = transcodeTwilioToGemini(muLawBuffer);
         inputStream.write(pcmBuffer);
 
-        // Process audio metrics asynchronously
-        processIncomingAudio(muLawBuffer).catch(err => {
+        // Fold this chunk into the real (acoustic) voice metrics for the call
+        try {
+          processIncomingAudio(muLawBuffer);
+        } catch (err) {
           console.error('[Metrics] Error processing audio chunk:', err);
-        });
+        }
       } else if (data.event === 'stop') {
         console.log(`[Twilio] Stream stopped.`);
         ws.close();
@@ -174,12 +196,18 @@ app.ws('/media-stream', async (ws, req) => {
 
     // Trigger initial greeting from the agent now that Gemini is connected
     console.log(`[Gemini] Triggering initial greeting...`);
-    voiceAgent.voice.speak('Hello! How can I help you today?').catch(err => {
+    voiceAgent.voice.speak('喂，你好！我係康橋嘅關懷助理，打嚟同你做今日嘅健康問候。請問你今日點呀？').catch(err => {
       console.error(`[Gemini] Error sending initial greeting:`, err);
     });
 
     ws.on('close', () => {
       console.log(`[WebSocket] Client disconnected.`);
+      const metrics = getCallMetrics();
+      console.log(`[Metrics] Call voice metrics — pause ratio: ${metrics.pauseRatio}, speech: ${metrics.speechMs}ms, total: ${metrics.totalMs}ms`);
+      if (!callSession.logged) {
+        console.warn('[CallSession] Call ended without a structured check-in (agent did not call logDailyCheckIn).');
+      }
+      endCallSession();
       inputStream.end();
       voiceAgent.voice.off('speaking', onSpeaking);
       voiceAgent.voice.off('error', onError);
@@ -203,6 +231,10 @@ app.get('/make-call', async (req, res) => {
     return res.status(400).send('Missing Twilio credentials or phone numbers in environment variables.');
   }
 
+  // Which elder is this call for? ?elderId=chan → that elder; else DEMO_ELDER_ID.
+  const elderId = (req.query.elderId as string) || process.env.DEMO_ELDER_ID || null;
+  startCallSession(elderId);
+
   try {
     const client = twilio(accountSid, authToken);
     console.log(`[Twilio] Initiating outbound call from ${fromNumber} to ${toNumber}...`);
@@ -215,6 +247,29 @@ app.get('/make-call', async (req, res) => {
   } catch (error: any) {
     console.error('[Twilio] Failed to trigger call:', error);
     res.status(500).send(`Failed to trigger call: ${error.message}`);
+  }
+});
+
+// Prove the call → dashboard loop WITHOUT placing a real phone call.
+// GET /simulate-call?elderId=wong  →  writes a realistic daily check-in to Supabase,
+// exactly as the live agent's logDailyCheckIn tool would, then returns the result.
+app.get('/simulate-call', async (req, res) => {
+  const elderId = (req.query.elderId as string) || process.env.DEMO_ELDER_ID || 'wong';
+  const sample: CheckInPayload = {
+    activities: { med: 'done', meal: 'done', walk: 'missed', water: 'done', sleep: 'missed', mood: 'done' },
+    flags: [
+      { severity: 'watch', label_en: 'Reported feeling dizzy when standing up this morning', label_zh: '今早起身時感到頭暈' },
+    ],
+    summary_en: 'Took medication and ate breakfast. Slept poorly and felt dizzy when standing. Otherwise in good spirits.',
+    summary_zh: '已服藥及食早餐。昨晚睡得不好，起身時感頭暈，其餘狀態不錯。',
+    voiceMetrics: { pauseRatio: 0.22, speechMs: 48000 },
+  };
+  try {
+    const result = await recordCheckIn(elderId, sample);
+    res.json({ simulated: true, elderId, ...result });
+  } catch (err: any) {
+    console.error('[Simulate] Failed:', err);
+    res.status(500).json({ error: err.message });
   }
 });
 
