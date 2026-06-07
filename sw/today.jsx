@@ -79,7 +79,10 @@ function ElderCard({ e, lang, onOpen }) {
         <div style={{ flex: 1 }}>
           <div className="enm">{L(lang, vm.name, vm.zh)}</div>
           <div className="ezh">{L(lang, vm.zh, vm.name)} · {vm.age}{L(lang, '', '歲')}</div>
-          <div className="emeta">{L(lang, `Day ${vm.day} · ${vm.dx}`, `出院第 ${vm.day} 天 · ${vm.dxZh}`)}</div>
+          <div className="emeta">{L(lang, `Day ${vm.day}/30 · ${vm.dx}`, `出院第 ${vm.day}/30 天 · ${vm.dxZh}`)}</div>
+          <div className="edprog" title={`Day ${vm.day} of 30`}>
+            <div className="edprog-fill" style={{ width: `${Math.min(100, Math.round((vm.day / 30) * 100))}%` }} />
+          </div>
         </div>
         {/* completion ring */}
         <div className={'ecompl' + (allDone ? ' all' : '')} title={`${doneCount}/${totalActs} today`}>
@@ -128,6 +131,8 @@ function ElderCard({ e, lang, onOpen }) {
   )
 }
 
+const RISK_SORT = { risk: 0, watch: 1, stable: 2 }
+
 function TodayView({ elders, visits, alerts, lang, onOpen, onVisit }) {
   const counts = {
     stable: elders.filter(e => e.risk_tier === 'stable').length,
@@ -135,6 +140,7 @@ function TodayView({ elders, visits, alerts, lang, onOpen, onVisit }) {
     risk:   elders.filter(e => e.risk_tier === 'risk').length,
     calls:  elders.filter(e => (e.latest_call || {}).state === 'done').length,
   }
+  const sortedElders = [...elders].sort((a, b) => (RISK_SORT[a.risk_tier] ?? 3) - (RISK_SORT[b.risk_tier] ?? 3))
 
   return (
     <div className="content">
@@ -174,7 +180,7 @@ function TodayView({ elders, visits, alerts, lang, onOpen, onVisit }) {
             <span className="sub">{L(lang, `${elders.length} elders · sorted by risk`, `${elders.length} 位長者 · 按風險排序`)}</span>
           </div>
           <div className="caseload">
-            {elders.map(e => <ElderCard key={e.id} e={e} lang={lang} onOpen={onOpen} />)}
+            {sortedElders.map(e => <ElderCard key={e.id} e={e} lang={lang} onOpen={onOpen} />)}
           </div>
         </div>
 

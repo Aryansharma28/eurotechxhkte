@@ -181,7 +181,12 @@ function ElderCall() {
               ? <button className="cctrl cplay" onClick={restart}><svg viewBox="0 0 24 24" width="22" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8m0-5v5h5"/></svg></button>
               : <button className="cctrl cplay" onClick={() => setPlaying(p => !p)}>{playing ? <svg viewBox="0 0 24 24" width="22" fill="#fff"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg> : <svg viewBox="0 0 24 24" width="22" fill="#fff"><path d="M7 5l12 7-12 7z"/></svg>}</button>)}
         <button className="cctrl" onClick={() => setStep(s => Math.min(CALL_STEPS.length-1, s+1))} disabled={phase!=="call"}>{I.chevron}</button>
-        <span className="cprog">{phase==="call" ? `${Math.min(step+1, CALL_STEPS.length)} / ${CALL_STEPS.length}` : t("Press answer to begin","按接聽開始")}</span>
+        {phase === "call" && !synced
+          ? <div className="cstepbar" title={`${Math.min(step+1, CALL_STEPS.length)} / ${CALL_STEPS.length}`}>
+              <div className="cstepfill" style={{ width: `${Math.min(100, ((step+1)/CALL_STEPS.length)*100)}%` }} />
+            </div>
+          : <span className="cprog">{phase === "incoming" ? t("Press answer to begin", "按接聽開始") : t("Call complete", "通話完成")}</span>
+        }
       </div>
     </div>
   );
