@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
+    "build:jsx": "node build-jsx.mjs",
     "voice": "ts-node-dev --respawn --transpile-only src/server.ts",
     "voice:build": "tsc",
     "voice:start": "node dist/server.js",
@@ -13,9 +14,9 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.19.14",
-    "hono": "^4.7.10",
     "@supabase/supabase-js": "^2.107.0",
     "dotenv": "^16.4.5",
+    "hono": "^4.7.10",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -25,6 +26,7 @@
     "@types/express": "^4.17.21",
     "@types/express-ws": "^3.0.4",
     "@types/node": "^20.12.7",
+    "esbuild": "^0.28.0",
     "express": "^4.19.2",
     "express-ws": "^5.0.2",
     "ts-node-dev": "^2.0.0",
