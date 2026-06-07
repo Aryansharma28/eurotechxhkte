@@ -83,4 +83,5 @@
 - **Live biomarker charts** — The 7 acoustic scores are computed and saved to Supabase on every real call; the dashboard charts will show live trends automatically once 14+ real calls have been made per elder.
 - **No push/SMS alerts** — Flags surface in the dashboard UI; production would add Slack/SMS to close the safety notification gap.
 - **No PDPO audit logging** — Required for Hong Kong data privacy compliance in a real clinical pilot; out of scope for the hackathon.
-- **Next step: alert notifications** — Webhook or SMS to social worker on new `risk`-tier flag is the highest-value safety improvement.
+- **Next step: alert notifications** — Webhook or SMS to social worker on new `risk`-tier flag is the highest-value safety improvement. To make sure we are privacy compliant, we ask the involved patient for consent for their data. Even if we do not have access to their data, our product can still handle the monitoring. If we are allowed access, we can personalize their experience.
+- Healthcare metrics don't update yet
