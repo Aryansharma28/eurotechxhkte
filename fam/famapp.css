@@ -1,4 +1,4 @@
-/* CareBridge — Family app (adult child) styles */
+/* CareBridge — Family app (adult child) iOS-native styles */
 
 /* ================================================================
    STAGING WRAPPER (iOS frame context)
@@ -6,180 +6,288 @@
 .fam-stage {
   min-height: 100vh; display: grid; place-items: center; gap: 22px;
   padding: 40px 20px;
-  background: radial-gradient(130% 80% at 50% 0%, var(--green-tint) 0%, var(--bg) 60%);
+  background: #E8E8ED;
 }
 .fam-cap {
-  text-align: center; color: var(--ink-faint);
-  font-size: 12.5px; font-family: var(--mono);
+  text-align: center; color: rgba(60,60,67,0.40);
+  font-size: 12px; font-family: var(--mono);
 }
-.fam-cap b { color: var(--ink-soft); font-weight: 600; }
+.fam-cap b { color: rgba(60,60,67,0.60); font-weight: 600; }
 
 /* ================================================================
-   APP SHELL
+   APP SHELL — fills IOSDevice content area
    ================================================================ */
 .fam {
   height: 100%; display: flex; flex-direction: column;
-  background: var(--bg); font-family: var(--sans); color: var(--ink);
+  background: #F2F2F7; font-family: var(--sans); color: var(--ink);
+  position: relative;
 }
+
 .fam-scroll {
   flex: 1; overflow-y: auto;
-  padding: 54px 18px 94px;
-  display: flex; flex-direction: column; gap: 14px;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 0 100px;
 }
 .fam-scroll > * { flex-shrink: 0; }
 
 /* ================================================================
-   HEADER ROW
+   iOS NAV BAR — sticky, blurred, 60px status bar offset
    ================================================================ */
+.fam-nav {
+  position: sticky; top: 0; z-index: 10;
+  padding: 62px 16px 10px;
+  background: rgba(242, 242, 247, 0.88);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 0.5px solid rgba(60, 60, 67, 0.18);
+}
 .fam-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.fam-hi { font-size: 13.5px; color: var(--ink-soft); }
-.fam-hi b { color: var(--ink); font-weight: 700; font-size: 16px; display: block; letter-spacing: -0.01em; }
+.fam-hi { font-size: 13px; color: var(--ink-soft); }
+.fam-hi b { color: var(--ink); font-weight: 700; font-size: 17px; display: block; letter-spacing: -0.02em; }
 
 .fam-top-right { display: flex; gap: 8px; align-items: center; }
 
+/* iOS segmented control (EN/中) */
 .fam-lang {
-  display: flex; background: var(--surface);
-  border: 1px solid var(--line); border-radius: 999px; padding: 3px;
+  display: flex; background: rgba(116,116,128,0.12);
+  border-radius: 9px; padding: 2px; gap: 1px;
 }
 .fam-lang button {
-  border: none; background: none; padding: 5px 11px; border-radius: 999px;
-  font-weight: 700; font-size: 12px; color: var(--ink-faint); cursor: pointer;
+  border: none; background: none; padding: 4px 11px; border-radius: 7px;
+  font-weight: 600; font-size: 13px; color: var(--ink-soft); cursor: pointer;
   transition: background var(--dur-fast), color var(--dur-fast);
 }
-.fam-lang button.on { background: var(--green); color: #fff; }
+.fam-lang button.on {
+  background: #fff; color: var(--ink);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
 
 .fam-signout {
-  font-size: 11.5px; color: var(--ink-faint);
+  font-size: 13px; color: var(--calm);
   background: none; border: none; cursor: pointer; padding: 4px 2px;
-  transition: color var(--dur-fast);
+  font-weight: 400;
+  transition: opacity var(--dur-fast);
 }
-.fam-signout:hover { color: var(--ink-soft); }
+.fam-signout:hover { opacity: 0.7; }
 
 /* ================================================================
-   HERO CARD
+   iOS SECTION SPACING
+   ================================================================ */
+.fam-sec-gap { height: 28px; }
+.fam-sec-label {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  padding: 0 32px 6px;
+  line-height: 1.4;
+}
+
+/* ================================================================
+   iOS INSET GROUP (white rounded card, 16px horizontal margin)
+   ================================================================ */
+.fam-group {
+  background: #fff;
+  border-radius: 12px;
+  margin: 0 16px;
+  overflow: hidden;
+}
+
+/* iOS cell within a group */
+.fam-row {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 11px 16px;
+  position: relative;
+  background: #fff;
+  transition: background var(--dur-fast);
+}
+.fam-row:active { background: #EBEBF0; }
+.fam-row:not(.fam-row-last)::after {
+  content: "";
+  position: absolute;
+  bottom: 0; left: 54px; right: 0;
+  height: 0.5px; background: rgba(60,60,67,0.18);
+}
+.fam-row-last::after { display: none; }
+
+.fam-row-icon {
+  width: 30px; height: 30px; border-radius: 7px;
+  display: grid; place-items: center;
+  flex: none; margin-right: 13px;
+}
+.fam-row-icon svg { width: 16px; height: 16px; }
+.fam-row-icon.done    { background: var(--stable-bg); color: var(--green-ink); }
+.fam-row-icon.missed  { background: var(--risk-bg);   color: var(--risk-ink); }
+.fam-row-icon.pending { background: #E5E5EA;           color: var(--ink-faint); }
+
+.fam-row-body { flex: 1; min-width: 0; }
+.fam-row-title { font-size: 16px; font-weight: 400; color: var(--ink); }
+.fam-row-sub   { font-size: 13px; color: var(--ink-soft); margin-top: 1px; }
+
+.fam-row-value {
+  font-size: 16px; color: var(--ink-soft);
+  margin-left: 8px; white-space: nowrap;
+}
+.fam-row-value.done   { color: var(--stable); font-weight: 500; }
+.fam-row-value.missed { color: var(--risk-ink); }
+
+/* ================================================================
+   HERO CARD — full-bleed gradient with rounded corners
    ================================================================ */
 .fam-hero {
-  border-radius: 24px; padding: 22px; color: #fff;
+  margin: 16px 16px 0;
+  border-radius: 18px; padding: 20px;
+  color: #fff;
+  background: linear-gradient(145deg, #2EAA5B 0%, #1A7A40 100%);
+  box-shadow: 0 6px 24px rgba(46, 170, 91, 0.28);
   position: relative; overflow: hidden;
-  background: linear-gradient(150deg, var(--green) 0%, oklch(0.42 0.096 158) 100%);
-  box-shadow: 0 12px 32px oklch(0.5 0.09 158 / 0.30);
 }
 .fam-hero::before {
   content: "";
   position: absolute; inset: 0;
   background:
-    radial-gradient(ellipse 80% 60% at 110% -10%, oklch(1 0 0 / 0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 40% at -10% 110%, oklch(0.36 0.09 158 / 0.3) 0%, transparent 60%);
+    radial-gradient(ellipse 80% 60% at 110% -10%, rgba(255,255,255,0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at -5% 110%, rgba(0,0,0,0.12) 0%, transparent 60%);
   pointer-events: none;
 }
 
-.fam-hero .fav { display: flex; align-items: center; gap: 13px; position: relative; }
+.fam-hero .fav { display: flex; align-items: center; gap: 12px; position: relative; }
 .fam-hero .fav .ava {
-  width: 54px; height: 54px; border-radius: 50%;
-  border: 2.5px solid oklch(1 0 0 / 0.55);
-  background: repeating-linear-gradient(135deg, oklch(0.92 0.04 158) 0 7px, oklch(0.96 0.02 158) 7px 14px);
+  width: 50px; height: 50px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.60);
+  background: rgba(255,255,255,0.20);
   display: grid; place-items: center;
-  color: var(--green-ink); font-weight: 800; font-size: 21px; flex: none;
+  color: #fff; font-weight: 800; font-size: 20px; flex: none;
+  font-family: var(--hk);
 }
-.fam-hero .fnm { font-size: 18px; font-weight: 800; letter-spacing: -0.01em; }
-.fam-hero .fsub { font-size: 12.5px; opacity: 0.82; margin-top: 2px; }
+.fam-hero .fnm { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+.fam-hero .fsub { font-size: 12.5px; opacity: 0.80; margin-top: 2px; }
 
 .fam-hero .fstatus {
-  font-size: 25px; font-weight: 800; letter-spacing: -0.02em;
-  margin: 17px 0 6px; line-height: 1.15;
+  font-size: 22px; font-weight: 800; letter-spacing: -0.025em;
+  margin: 16px 0 6px; line-height: 1.2;
   position: relative;
 }
 .fam-hero .fwhen {
-  display: inline-flex; align-items: center; gap: 7px;
-  font-size: 12.5px; font-weight: 600;
-  background: oklch(1 0 0 / 0.16); padding: 5px 12px;
-  border-radius: 999px; position: relative;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 500;
+  background: rgba(255,255,255,0.18); padding: 5px 12px;
+  border-radius: 20px; position: relative;
 }
-.fam-hero .fwhen svg { width: 14px; height: 14px; }
-.fam-hero .fwhen.missed { background: oklch(0.4 0.12 27 / 0.35); }
+.fam-hero .fwhen svg { width: 13px; height: 13px; }
+.fam-hero .fwhen.missed { background: rgba(255,59,48,0.28); }
 
 /* ================================================================
-   GENTLE NOTE CARD
+   GENTLE NOTE CARD (flags)
    ================================================================ */
 .fam-note {
-  display: flex; gap: 11px; align-items: flex-start;
-  padding: 14px 16px; border-radius: 18px;
-  background: var(--watch-bg); border: 1px solid oklch(0.88 0.05 80);
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 14px 16px;
+  margin: 12px 16px 0;
+  border-radius: 12px;
+  background: var(--watch-bg);
 }
 .fam-note .ni {
-  width: 34px; height: 34px; border-radius: 10px;
-  background: oklch(0.96 0.06 80); color: var(--watch-ink);
+  width: 32px; height: 32px; border-radius: 8px;
+  background: rgba(255,159,10,0.15); color: var(--watch-ink);
   display: grid; place-items: center; flex: none;
 }
-.fam-note .nt { font-weight: 700; font-size: 14px; color: var(--watch-ink); }
+.fam-note .nt { font-weight: 600; font-size: 14px; color: var(--watch-ink); }
 .fam-note .nb { font-size: 13px; color: var(--ink-soft); line-height: 1.45; margin-top: 3px; }
 
 /* ================================================================
-   SECTION CARDS
+   SECTION CARD (call summary, voice insight — freeform content)
    ================================================================ */
 .fam-card {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 20px;
-  padding: 17px;
-  box-shadow: var(--shadow-sm);
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 0 16px;
 }
 .fam-card .fct {
-  font-size: 11px; font-family: var(--mono);
+  font-size: 11.5px; font-family: var(--mono);
   text-transform: uppercase; letter-spacing: 0.06em;
-  color: var(--ink-faint); font-weight: 600; margin-bottom: 13px;
+  color: var(--ink-faint); font-weight: 600; margin-bottom: 10px;
 }
 .fam-card .fcard-head {
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 13px;
+  margin-bottom: 10px;
 }
 .fam-card .fcard-head .fct { margin-bottom: 0; }
 .fam-card .fcard-action {
-  font-size: 12px; font-weight: 700; color: var(--green);
+  font-size: 14px; font-weight: 400; color: var(--calm);
   background: none; border: none; cursor: pointer; padding: 2px 0;
 }
-.fam-card .fsummary { font-size: 15px; line-height: 1.55; color: var(--ink); }
+.fam-card .fsummary { font-size: 15px; line-height: 1.6; color: var(--ink); }
 
 /* ================================================================
-   ACTIVITY GRID
+   ACTIVITY LIST — iOS-style rows (replaces old 3-col grid)
    ================================================================ */
-.fam-acts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
-.fam-act {
-  display: flex; flex-direction: column; align-items: center; gap: 7px;
-  padding: 14px 6px; border-radius: 14px;
-  background: var(--surface-2); border: 1px solid var(--line-soft);
-  transition: transform var(--dur-fast);
+.fam-act-icon {
+  width: 30px; height: 30px; border-radius: 7px;
+  display: grid; place-items: center;
+  flex: none; margin-right: 13px;
+  position: relative;
 }
-.fam-act:active { transform: scale(0.97); }
-.fam-act .fai {
-  width: 40px; height: 40px; border-radius: 12px;
-  display: grid; place-items: center; position: relative;
-}
-.fam-act.done .fai { background: var(--stable-bg); color: var(--green-ink); }
-.fam-act.missed .fai { background: var(--risk-bg); color: var(--risk-ink); }
-.fam-act.soft .fai  { background: var(--bg-sink);  color: var(--ink-faint); }
-.fam-act .fai svg { width: 20px; height: 20px; }
+.fam-act-icon svg { width: 16px; height: 16px; }
+.fam-act-icon.done    { background: var(--stable-bg); color: var(--green-ink); }
+.fam-act-icon.missed  { background: var(--risk-bg);   color: var(--risk-ink); }
+.fam-act-icon.pending { background: #E5E5EA;           color: var(--ink-faint); }
 
-.fam-act .fcheck {
+.fam-act-check {
   position: absolute; bottom: -3px; right: -3px;
-  width: 18px; height: 18px; border-radius: 50%;
+  width: 14px; height: 14px; border-radius: 50%;
   background: var(--green); color: #fff;
   display: grid; place-items: center;
-  border: 2px solid var(--surface);
+  border: 1.5px solid #fff;
 }
-.fam-act .fcheck svg { width: 10px; height: 10px; }
-.fam-act .fal { font-size: 11.5px; font-weight: 600; color: var(--ink-soft); text-align: center; }
+.fam-act-check svg { width: 8px; height: 8px; }
 
 /* ================================================================
-   WEEK DOTS
+   ELDER TO-DO LIST — iOS style
    ================================================================ */
-.fam-week { display: flex; justify-content: space-between; }
+.fam-todo {
+  display: flex; gap: 13px; align-items: center;
+  min-height: 44px; padding: 10px 16px;
+  position: relative; background: #fff;
+  transition: background var(--dur-fast);
+}
+.fam-todo:not(.fam-todo-last)::after {
+  content: ""; position: absolute;
+  bottom: 0; left: 44px; right: 0;
+  height: 0.5px; background: rgba(60,60,67,0.18);
+}
+.fam-todo-last::after { display: none; }
+
+.fam-todo .ftcheck {
+  width: 22px; height: 22px; border-radius: 11px;
+  border: 1.5px solid rgba(60,60,67,0.25);
+  display: grid; place-items: center; flex: none;
+  transition: background var(--dur-fast), border-color var(--dur-fast);
+}
+.fam-todo.done .ftcheck {
+  background: var(--green); border-color: var(--green);
+  color: #fff;
+}
+.fam-todo.done .ftcheck svg { width: 12px; height: 12px; }
+.fam-todo .ftt { font-size: 16px; font-weight: 400; line-height: 1.4; color: var(--ink); }
+.fam-todo.done .ftt { color: var(--ink-faint); text-decoration: line-through; }
+
+.fam-empty { font-size: 14px; color: var(--ink-faint); padding: 14px 16px; }
+
+/* ================================================================
+   WEEK CHECK-INS — iOS Calendar mini-dots
+   ================================================================ */
+.fam-week { display: flex; justify-content: space-between; padding: 4px 4px 8px; }
 .fam-day  { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.fam-day .fd { font-size: 10.5px; color: var(--ink-faint); font-family: var(--mono); }
+.fam-day .fd { font-size: 11px; color: var(--ink-soft); font-weight: 400; text-transform: uppercase; }
 .fam-day .fdot {
-  width: 26px; height: 26px; border-radius: 50%;
+  width: 28px; height: 28px; border-radius: 50%;
   display: grid; place-items: center;
-  background: var(--bg-sink);
+  background: #E5E5EA;
 }
 .fam-day .fdot.done { background: var(--stable-bg); color: var(--green-ink); }
 .fam-day .fdot.done svg { width: 13px; height: 13px; }
@@ -187,63 +295,28 @@
 .fam-day.today .fdot { box-shadow: 0 0 0 2px var(--green); }
 
 /* ================================================================
-   HELP CARD
-   ================================================================ */
-.fam-help {
-  background: var(--green-tint); border: 1px solid var(--green-tint-2);
-  border-radius: 20px; padding: 17px;
-}
-.fam-help .fht { font-weight: 800; font-size: 14.5px; color: var(--green-ink); }
-.fam-help .fhb { font-size: 13.5px; color: var(--ink-soft); line-height: 1.5; margin-top: 5px; }
-
-/* ================================================================
-   ELDER TO-DO LIST
-   ================================================================ */
-.fam-todos { display: flex; flex-direction: column; gap: 1px; }
-.fam-todo {
-  display: flex; align-items: center; gap: 11px;
-  padding: 10px 8px; border-radius: 11px;
-  transition: background var(--dur-fast);
-}
-.fam-todo:hover { background: var(--surface-2); }
-.fam-todo .ftcheck {
-  width: 21px; height: 21px; border-radius: 6px;
-  border: 1.5px solid var(--line); display: grid;
-  place-items: center; flex: none;
-}
-.fam-todo.done .ftcheck {
-  background: var(--stable-bg); border-color: var(--green);
-  color: var(--green-ink);
-}
-.fam-todo.done .ftcheck svg { width: 12px; height: 12px; }
-.fam-todo .ftt { font-size: 13.5px; line-height: 1.4; color: var(--ink); }
-.fam-todo.done .ftt { color: var(--ink-faint); text-decoration: line-through; }
-
-.fam-empty { font-size: 13px; color: var(--ink-faint); padding: 6px 2px; }
-
-/* ================================================================
-   BOTTOM ACTION BAR
+   BOTTOM TOOLBAR — iOS toolbar style
    ================================================================ */
 .fam-actions {
   position: absolute; left: 0; right: 0; bottom: 0;
-  padding: 14px 18px 32px; display: flex; gap: 10px;
-  background: linear-gradient(0deg, var(--bg) 60%, oklch(0.975 0.007 150 / 0) 100%);
+  padding: 12px 16px 30px;
+  display: flex; gap: 10px;
+  background: rgba(242, 242, 247, 0.92);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 0.5px solid rgba(60,60,67,0.18);
 }
 .fam-btn {
-  flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 14px; border-radius: 16px;
-  font-weight: 700; font-size: 14.5px; border: none; cursor: pointer;
-  transition: transform var(--dur-fast), box-shadow var(--dur);
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 13px; border-radius: 13px;
+  font-weight: 600; font-size: 15px; border: none; cursor: pointer;
+  transition: transform var(--dur-fast), opacity var(--dur-fast);
 }
-.fam-btn:active { transform: scale(0.97); }
+.fam-btn:active { transform: scale(0.97); opacity: 0.8; }
 .fam-btn.call {
   background: var(--green); color: #fff;
-  box-shadow: 0 4px 14px oklch(0.5 0.09 158 / 0.28);
 }
-.fam-btn.call:hover { box-shadow: var(--shadow-green); }
 .fam-btn.msg {
-  background: var(--surface); color: var(--ink);
-  border: 1px solid var(--line);
+  background: #E5E5EA; color: var(--ink);
 }
-.fam-btn.msg:hover { background: var(--surface-2); }
 .fam-btn svg { width: 18px; height: 18px; }

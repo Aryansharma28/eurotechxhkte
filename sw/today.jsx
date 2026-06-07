@@ -61,8 +61,11 @@ function ActRow({ week, lang }) {
 }
 
 function ElderCard({ e, lang, onOpen }) {
-  const vm = elderViewModel(e)
-  const r  = RISK[vm.risk] || RISK.stable
+  const vm     = elderViewModel(e)
+  const r      = RISK[vm.risk] || RISK.stable
+  const neuBm  = (typeof BIOMARKERS !== 'undefined') ? BIOMARKERS[e.id] : null
+  const neuLvl = neuBm?.alertLevel   // 'risk' | 'watch' | undefined
+
   return (
     <div className="ecard card" onClick={() => onOpen(e.id)}>
       <div className="ehead">
@@ -88,6 +91,19 @@ function ElderCard({ e, lang, onOpen }) {
         <span className="fdot" style={{ background: `var(--${r.cls === 'stable' ? 'stable' : r.cls === 'watch' ? 'watch' : 'risk'})` }}></span>
         <span>{L(lang, vm.call.flag, vm.call.flagZh)}</span>
       </div>
+
+      {/* compact voice biomarker row — only when alert */}
+      {neuLvl && (
+        <div className={'eneuro eneuro-' + neuLvl}>
+          <span className="eneuro-ic">{I.wave}</span>
+          <span className="eneuro-msg">
+            {L(lang, 'Voice pattern change', '語音模式有變')}
+          </span>
+          <span className={'pill ' + neuLvl} style={{ fontSize: 10, padding: '1px 7px', marginLeft: 'auto' }}>
+            {neuLvl === 'risk' ? L(lang, 'Neuro risk', '神經高危') : L(lang, 'Watch', '留意')}
+          </span>
+        </div>
+      )}
     </div>
   )
 }
