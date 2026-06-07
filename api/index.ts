@@ -211,18 +211,36 @@ app.post('/simulate-call', async (c) => {
   // Three mock outcomes so repeated calls visibly change the caseload.
   const outcomes = [
     { en: 'Took all medication and ate well. Slept soundly and in good spirits.',
-      zh: '已服藥，食得好，瞓得好，精神不錯。', miss: [] as string[], flag: null as any },
+      zh: '已服藥，食得好，瞓得好，精神不錯。', miss: [] as string[], flag: null as any,
+      m: { pause_ratio: 0.18, speech_ms: 52000, parkinson_signal: 18, neurological_decline_signal: 14, rate: 108, pitch: 6.2, tremor: 3.0, fluency: 84 } },
     { en: 'Medication taken and had a light breakfast. Walked around the flat, a little tired.',
-      zh: '已服藥，食咗少少早餐，喺屋企行咗下，有少少攰。', miss: ['sleep'], flag: null as any },
+      zh: '已服藥，食咗少少早餐，喺屋企行咗下，有少少攰。', miss: ['sleep'], flag: null as any,
+      m: { pause_ratio: 0.27, speech_ms: 41000, parkinson_signal: 34, neurological_decline_signal: 28, rate: 96, pitch: 4.9, tremor: 5.2, fluency: 66 } },
     { en: 'Felt dizzy when standing this morning, otherwise comfortable.',
       zh: '今早起身時感到頭暈，其餘大致舒服。', miss: ['walk'],
-      flag: { severity: 'watch', label_en: 'Reported dizziness on the daily call', label_zh: '每日電話報告頭暈' } },
+      flag: { severity: 'watch', label_en: 'Reported dizziness on the daily call', label_zh: '每日電話報告頭暈' },
+      m: { pause_ratio: 0.37, speech_ms: 33000, parkinson_signal: 53, neurological_decline_signal: 46, rate: 82, pitch: 3.6, tremor: 7.3, fluency: 49 } },
   ]
   const o = outcomes[Math.floor(Math.random() * outcomes.length)]
 
+  // Make the simulated call sort as the most recent for this elder (beats future-dated seed calls).
+  const { data: lastCall } = await admin.from('daily_calls')
+    .select('scheduled_at').eq('elder_id', elder_id)
+    .order('scheduled_at', { ascending: false }).limit(1).maybeSingle()
+  let ts = now
+  if (lastCall?.scheduled_at && new Date(lastCall.scheduled_at).getTime() >= now.getTime()) {
+    ts = new Date(new Date(lastCall.scheduled_at).getTime() + 60_000)
+  }
+  const jit = (v: number, d: number) => Math.round((v + (Math.random() - 0.5) * 2 * d) * 100) / 100
+
   const { data: call, error: callErr } = await admin.from('daily_calls').insert({
-    elder_id, state: 'done', scheduled_at: now.toISOString(), completed_at: now.toISOString(),
+    elder_id, state: 'done', scheduled_at: ts.toISOString(), completed_at: ts.toISOString(),
     channel: 'simulated', summary_en: o.en, summary_zh: o.zh,
+    pause_ratio: jit(o.m.pause_ratio, 0.03), speech_ms: Math.round(jit(o.m.speech_ms, 3000)),
+    parkinson_signal: Math.round(jit(o.m.parkinson_signal, 4)),
+    neurological_decline_signal: Math.round(jit(o.m.neurological_decline_signal, 4)),
+    rate: Math.round(jit(o.m.rate, 5)), pitch: jit(o.m.pitch, 0.4),
+    tremor: jit(o.m.tremor, 0.5), fluency: Math.round(jit(o.m.fluency, 5)),
   }).select().single()
   if (callErr) return c.json({ error: callErr.message }, 500)
 
