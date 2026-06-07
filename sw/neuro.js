@@ -1,17 +1,19 @@
 // AUTO-GENERATED from sw/neuro.jsx by `npm run build:jsx` — edit the .jsx, not this file.
 function Sparkline({ values, width = 80, height = 32, level }) {
-  if (!values || values.length < 2) return React.createElement("svg", { width, height });
+  if (!values || values.length < 2) return React.createElement("svg", { width: width != null ? width : "100%", height });
   const mn = Math.min(...values);
   const mx = Math.max(...values);
   const rng = mx - mn || 1;
   const pad = 3;
-  const xf = (i) => (i / (values.length - 1) * (width - pad * 2) + pad).toFixed(1);
+  const vw = width != null ? width : 200;
+  const xf = (i) => (i / (values.length - 1) * (vw - pad * 2) + pad).toFixed(1);
   const yf = (v) => (height - pad - (v - mn) / rng * (height - pad * 2)).toFixed(1);
   const pts = values.map((v, i) => `${xf(i)},${yf(v)}`).join(" L ");
   const color = level === "risk" ? "var(--risk)" : level === "watch" ? "var(--watch)" : "var(--stable)";
   const lx = xf(values.length - 1);
   const ly = yf(values[values.length - 1]);
-  return /* @__PURE__ */ React.createElement("svg", { width, height, style: { display: "block", overflow: "visible" } }, /* @__PURE__ */ React.createElement(
+  const svgProps = width == null ? { viewBox: `0 0 ${vw} ${height}`, style: { display: "block", width: "100%", height, overflow: "visible" } } : { width, height, style: { display: "block", overflow: "visible" } };
+  return /* @__PURE__ */ React.createElement("svg", { ...svgProps }, /* @__PURE__ */ React.createElement(
     "path",
     {
       d: `M ${pts}`,
@@ -70,7 +72,27 @@ function ElderNeuroCard({ elder, bm, lang, onOpen }) {
     fontSize: 13,
     lineHeight: 1.45,
     color: neuroLevel === "risk" ? "var(--risk-ink)" : "var(--watch-ink)"
-  } }, L(lang, msg.en, msg.zh))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 10, justifyContent: "space-between", flexWrap: "wrap" } }, BIOMARKER_KEYS.map((k) => /* @__PURE__ */ React.createElement(
+  } }, L(lang, msg.en, msg.zh))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 14, marginBottom: 14 } }, ["parkinson", "neuroDec"].map((k) => {
+    const t = NEURO_THRESHOLDS[k];
+    if (!t) return null;
+    const values = bm.days.map((d) => d[k]);
+    const level = bm.metricAlerts[k];
+    const today = bm.today[k];
+    const numColor = level === "risk" ? "var(--risk-ink)" : level === "watch" ? "var(--watch-ink)" : "var(--ink)";
+    return /* @__PURE__ */ React.createElement("div", { key: k, style: { flex: 1, display: "flex", flexDirection: "column", gap: 4 } }, /* @__PURE__ */ React.createElement("div", { style: {
+      fontSize: 10,
+      color: "var(--ink-faint)",
+      fontWeight: 700,
+      textTransform: "uppercase",
+      letterSpacing: "0.05em"
+    } }, L(lang, t.label_en, t.label_zh)), /* @__PURE__ */ React.createElement(Sparkline, { values, width: null, height: 44, level, fill: true }), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "baseline", gap: 4 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 22, fontWeight: 800, fontFamily: "var(--mono)", color: numColor, lineHeight: 1 } }, today), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 10, color: "var(--ink-faint)" } }, t.unit), level !== "ok" && /* @__PURE__ */ React.createElement("span", { className: "pill " + level, style: { fontSize: 9, padding: "1px 7px", marginLeft: 4 } }, /* @__PURE__ */ React.createElement("span", { className: "dot" }), level)));
+  })), /* @__PURE__ */ React.createElement("div", { style: {
+    display: "flex",
+    gap: 8,
+    paddingTop: 10,
+    borderTop: "0.5px solid var(--line-soft)",
+    flexWrap: "wrap"
+  } }, ["rate", "pauses", "pitch", "tremor", "fluency"].map((k) => /* @__PURE__ */ React.createElement(
     MetricCol,
     {
       key: k,
@@ -82,7 +104,7 @@ function ElderNeuroCard({ elder, bm, lang, onOpen }) {
       lang
     }
   ))), /* @__PURE__ */ React.createElement("div", { style: {
-    marginTop: 12,
+    marginTop: 10,
     paddingTop: 8,
     borderTop: "1px solid var(--line-soft)",
     fontSize: 11,
@@ -90,8 +112,8 @@ function ElderNeuroCard({ elder, bm, lang, onOpen }) {
     fontFamily: "var(--mono)"
   } }, L(
     lang,
-    "Voice biomarkers \xB7 extracted from daily calls \xB7 sparklines = last 7 days \xB7 baseline = days 1\u20137",
-    "\u8A9E\u97F3\u751F\u7269\u6A19\u8A8C \xB7 \u4F86\u81EA\u6BCF\u65E5\u901A\u8A71 \xB7 \u8DA8\u52E2\u5716\uFF1D\u904E\u53BB7\u5929 \xB7 \u57FA\u6E96\uFF1D\u7B2C1\u20137\u5929"
+    "Top: 14-day composite signals \xB7 bottom: acoustic inputs \xB7 baseline = days 1\u20137",
+    "\u4E0A\uFF1A14\u5929\u7D9C\u5408\u4FE1\u865F \xB7 \u4E0B\uFF1A\u8072\u5B78\u8F38\u5165 \xB7 \u57FA\u6E96\uFF1D\u7B2C1\u20137\u5929"
   )));
 }
 function NeuroView({ elders, lang, onOpen }) {

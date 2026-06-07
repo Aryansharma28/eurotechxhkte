@@ -103,7 +103,8 @@ function Dashboard() {
   }).length : 0;
   const navItems = [
     { k: "today", en: "Today", zh: "\u4ECA\u65E5", ic: I.home },
-    { k: "alerts", en: "Alerts", zh: "\u63D0\u793A", ic: I.bell, badge: alerts.length || null }
+    { k: "alerts", en: "Alerts", zh: "\u63D0\u793A", ic: I.bell, badge: alerts.length || null },
+    { k: "neuro", en: "Neuro", zh: "\u795E\u7D93", ic: I.wave, badge: neuroAlertCount || null }
   ];
   const today = /* @__PURE__ */ new Date();
   const dateStr = L(
@@ -113,7 +114,8 @@ function Dashboard() {
   );
   const titles = {
     today: L(lang, "Good morning, Karen", "\u65E9\u6668\uFF0C\u5BB6\u6B23"),
-    alerts: L(lang, "Alerts", "\u63D0\u793A")
+    alerts: L(lang, "Alerts", "\u63D0\u793A"),
+    neuro: L(lang, "Neurological Voice Biomarkers", "\u795E\u7D93\u8A9E\u97F3\u751F\u7269\u6A19\u8A8C")
   };
   return /* @__PURE__ */ React.createElement("div", { className: "app" }, /* @__PURE__ */ React.createElement("aside", { className: "side" }, /* @__PURE__ */ React.createElement("div", { className: "brand" }, /* @__PURE__ */ React.createElement("img", { src: "logo.svg", alt: "CareBridge", className: "brand-logo" }), "CareBridge ", /* @__PURE__ */ React.createElement("span", { className: "zh" }, "\u5EB7\u6A4B")), /* @__PURE__ */ React.createElement("div", { className: "navg" }, navItems.map((n) => /* @__PURE__ */ React.createElement("button", { key: n.k, className: "navi " + (nav === n.k ? "on" : ""), onClick: () => setNav(n.k) }, n.ic, " ", L(lang, n.en, n.zh), n.badge ? /* @__PURE__ */ React.createElement("span", { className: "badge" }, n.badge) : null))), /* @__PURE__ */ React.createElement("div", { className: "spacer" }), /* @__PURE__ */ React.createElement(
     "button",
@@ -123,7 +125,7 @@ function Dashboard() {
       style: { margin: "0 8px 8px", fontSize: 14, padding: "9px 16px", justifyContent: "flex-start" }
     },
     L(lang, "Sign out", "\u767B\u51FA")
-  ), /* @__PURE__ */ React.createElement("div", { className: "workercard" }, /* @__PURE__ */ React.createElement(Avatar, { name: "\u66FE", size: 42 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "wn" }, L(lang, "Karen Tsang", "\u66FE\u5BB6\u6B23")), /* @__PURE__ */ React.createElement("div", { className: "wr" }, L(lang, "Community geriatric nurse", "\u793E\u5340\u8001\u4EBA\u79D1\u8B77\u58EB"))))), /* @__PURE__ */ React.createElement("div", { className: "main" }, /* @__PURE__ */ React.createElement("div", { className: "topbar" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", null, titles[nav]), /* @__PURE__ */ React.createElement("div", { className: "date" }, dateStr)), /* @__PURE__ */ React.createElement("div", { className: "topctl" }, /* @__PURE__ */ React.createElement("div", { className: "langtog" }, /* @__PURE__ */ React.createElement("button", { className: lang === "en" ? "on" : "", onClick: () => setLang("en") }, "EN"), /* @__PURE__ */ React.createElement("button", { className: lang === "zh" ? "on" : "", onClick: () => setLang("zh") }, "\u4E2D")))), loading && /* @__PURE__ */ React.createElement(LoadingSkeleton, null), !loading && nav === "today" && /* @__PURE__ */ React.createElement(TodayView, { elders, visits, alerts, lang, onOpen: setOpenId, onVisit: setVisitId }), !loading && nav === "alerts" && /* @__PURE__ */ React.createElement(AlertsView, { alerts, lang, onOpen: setOpenId, onReload: loadData })), openId && /* @__PURE__ */ React.createElement(ElderDetail, { id: openId, lang, onClose: () => setOpenId(null), onVisit: (id) => {
+  ), /* @__PURE__ */ React.createElement("div", { className: "workercard" }, /* @__PURE__ */ React.createElement(Avatar, { name: "\u66FE", size: 42 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "wn" }, L(lang, "Karen Tsang", "\u66FE\u5BB6\u6B23")), /* @__PURE__ */ React.createElement("div", { className: "wr" }, L(lang, "Community geriatric nurse", "\u793E\u5340\u8001\u4EBA\u79D1\u8B77\u58EB"))))), /* @__PURE__ */ React.createElement("div", { className: "main" }, /* @__PURE__ */ React.createElement("div", { className: "topbar" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", null, titles[nav]), /* @__PURE__ */ React.createElement("div", { className: "date" }, dateStr)), /* @__PURE__ */ React.createElement("div", { className: "topctl" }, /* @__PURE__ */ React.createElement("div", { className: "langtog" }, /* @__PURE__ */ React.createElement("button", { className: lang === "en" ? "on" : "", onClick: () => setLang("en") }, "EN"), /* @__PURE__ */ React.createElement("button", { className: lang === "zh" ? "on" : "", onClick: () => setLang("zh") }, "\u4E2D")))), loading && /* @__PURE__ */ React.createElement(LoadingSkeleton, null), !loading && nav === "today" && /* @__PURE__ */ React.createElement(TodayView, { elders, visits, alerts, lang, onOpen: setOpenId, onVisit: setVisitId }), !loading && nav === "alerts" && /* @__PURE__ */ React.createElement(AlertsView, { alerts, lang, onOpen: setOpenId, onReload: loadData }), !loading && nav === "neuro" && /* @__PURE__ */ React.createElement(NeuroView, { elders, lang, onOpen: setOpenId })), openId && /* @__PURE__ */ React.createElement(ElderDetail, { id: openId, lang, onClose: () => setOpenId(null), onVisit: (id) => {
     setOpenId(null);
     setVisitId(id);
   }, onReload: loadData }), visitId && /* @__PURE__ */ React.createElement(VisitMode, { id: visitId, lang, onClose: () => {

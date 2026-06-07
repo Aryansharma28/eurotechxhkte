@@ -1,18 +1,23 @@
 /* CareBridge — Neurological voice biomarker view (social worker dashboard) */
 
 function Sparkline({ values, width = 80, height = 32, level }) {
-  if (!values || values.length < 2) return React.createElement('svg', { width, height })
+  if (!values || values.length < 2) return React.createElement('svg', { width: width ?? '100%', height })
   const mn = Math.min(...values); const mx = Math.max(...values)
   const rng = mx - mn || 1
   const pad = 3
-  const xf = i => ((i / (values.length - 1)) * (width - pad * 2) + pad).toFixed(1)
+  // Use a fixed internal coordinate space so fluid-width SVGs scale correctly
+  const vw = width ?? 200
+  const xf = i => ((i / (values.length - 1)) * (vw - pad * 2) + pad).toFixed(1)
   const yf = v => ((height - pad) - ((v - mn) / rng) * (height - pad * 2)).toFixed(1)
   const pts = values.map((v, i) => `${xf(i)},${yf(v)}`).join(' L ')
   const color = level === 'risk' ? 'var(--risk)' : level === 'watch' ? 'var(--watch)' : 'var(--stable)'
   const lx = xf(values.length - 1)
   const ly = yf(values[values.length - 1])
+  const svgProps = width == null
+    ? { viewBox: `0 0 ${vw} ${height}`, style: { display: 'block', width: '100%', height, overflow: 'visible' } }
+    : { width, height, style: { display: 'block', overflow: 'visible' } }
   return (
-    <svg width={width} height={height} style={{ display: 'block', overflow: 'visible' }}>
+    <svg {...svgProps}>
       <path d={`M ${pts}`} fill="none" stroke={color} strokeWidth={1.8}
             strokeLinecap="round" strokeLinejoin="round" opacity={0.8} />
       <circle cx={lx} cy={ly} r={2.8} fill={color} />
@@ -111,9 +116,42 @@ function ElderNeuroCard({ elder, bm, lang, onOpen }) {
         </div>
       )}
 
-      {/* sparklines */}
-      <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between', flexWrap: 'wrap' }}>
-        {BIOMARKER_KEYS.map(k => (
+      {/* Primary: 2 composite signal graphs side-by-side */}
+      <div style={{ display: 'flex', gap: 14, marginBottom: 14 }}>
+        {['parkinson', 'neuroDec'].map(k => {
+          const t = NEURO_THRESHOLDS[k]
+          if (!t) return null
+          const values = bm.days.map(d => d[k])
+          const level  = bm.metricAlerts[k]
+          const today  = bm.today[k]
+          const numColor = level === 'risk' ? 'var(--risk-ink)' : level === 'watch' ? 'var(--watch-ink)' : 'var(--ink)'
+          return (
+            <div key={k} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ fontSize: 10, color: 'var(--ink-faint)', fontWeight: 700, textTransform: 'uppercase',
+                            letterSpacing: '0.05em' }}>
+                {L(lang, t.label_en, t.label_zh)}
+              </div>
+              <Sparkline values={values} width={null} height={44} level={level} fill />
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                <span style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--mono)', color: numColor, lineHeight: 1 }}>
+                  {today}
+                </span>
+                <span style={{ fontSize: 10, color: 'var(--ink-faint)' }}>{t.unit}</span>
+                {level !== 'ok' && (
+                  <span className={'pill ' + level} style={{ fontSize: 9, padding: '1px 7px', marginLeft: 4 }}>
+                    <span className="dot" />{level}
+                  </span>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Secondary: 5 acoustic metrics compact */}
+      <div style={{ display: 'flex', gap: 8, paddingTop: 10, borderTop: '0.5px solid var(--line-soft)',
+                    flexWrap: 'wrap' }}>
+        {['rate', 'pauses', 'pitch', 'tremor', 'fluency'].map(k => (
           <MetricCol
             key={k}
             metricKey={k}
@@ -126,11 +164,11 @@ function ElderNeuroCard({ elder, bm, lang, onOpen }) {
         ))}
       </div>
 
-      <div style={{ marginTop: 12, paddingTop: 8, borderTop: '1px solid var(--line-soft)',
+      <div style={{ marginTop: 10, paddingTop: 8, borderTop: '1px solid var(--line-soft)',
                     fontSize: 11, color: 'var(--ink-faint)', fontFamily: 'var(--mono)' }}>
         {L(lang,
-          'Voice biomarkers · extracted from daily calls · sparklines = last 7 days · baseline = days 1–7',
-          '語音生物標誌 · 來自每日通話 · 趨勢圖＝過去7天 · 基準＝第1–7天')}
+          'Top: 14-day composite signals · bottom: acoustic inputs · baseline = days 1–7',
+          '上：14天綜合信號 · 下：聲學輸入 · 基準＝第1–7天')}
       </div>
     </div>
   )

@@ -1,10 +1,10 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { handle } from '@hono/node-server/vercel'
+import { handle } from 'hono/vercel'
 import { createMiddleware } from 'hono/factory'
 import { createClient } from '@supabase/supabase-js'
 
-export const config = { runtime: 'nodejs' }
+export const config = { runtime: 'edge' }
 
 // ── Supabase helpers ──────────────────────────────────────────────────────────
 

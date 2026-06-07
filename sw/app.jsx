@@ -149,6 +149,7 @@ function Dashboard() {
   const navItems = [
     { k: 'today',  en: 'Today',  zh: '今日', ic: I.home },
     { k: 'alerts', en: 'Alerts', zh: '提示', ic: I.bell, badge: alerts.length || null },
+    { k: 'neuro',  en: 'Neuro',  zh: '神經', ic: I.wave, badge: neuroAlertCount || null },
   ]
 
   const today = new Date()
@@ -159,6 +160,7 @@ function Dashboard() {
   const titles = {
     today:  L(lang, 'Good morning, Karen', '早晨，家欣'),
     alerts: L(lang, 'Alerts', '提示'),
+    neuro:  L(lang, 'Neurological Voice Biomarkers', '神經語音生物標誌'),
   }
 
   return (
@@ -209,6 +211,7 @@ function Dashboard() {
         {loading && <LoadingSkeleton />}
         {!loading && nav === 'today'  && <TodayView  elders={elders} visits={visits} alerts={alerts} lang={lang} onOpen={setOpenId} onVisit={setVisitId} />}
         {!loading && nav === 'alerts' && <AlertsView alerts={alerts} lang={lang} onOpen={setOpenId} onReload={loadData} />}
+        {!loading && nav === 'neuro'  && <NeuroView  elders={elders} lang={lang} onOpen={setOpenId} />}
       </div>
 
       {openId  && <ElderDetail id={openId}  lang={lang} onClose={() => setOpenId(null)}  onVisit={(id) => { setOpenId(null); setVisitId(id) }} onReload={loadData} />}

@@ -72,6 +72,7 @@ function ElderDetail({ id, lang, onClose, onVisit, onReload }) {
   const [detail, setDetail] = React.useState(null)
   const [loading, setLoading] = React.useState(true)
   const [err, setErr] = React.useState(null)
+  const [tab, setTab] = React.useState('overview')
 
   React.useEffect(() => {
     setLoading(true); setErr(null)
@@ -108,6 +109,7 @@ function ElderDetail({ id, lang, onClose, onVisit, onReload }) {
   const r   = RISK[e.risk_tier] || RISK.stable
   const fam = (e.family || [])[0] || {}
   const tagIcon = { done: I.phone, missed: I.phoneMissed, family: I.heart, visit: I.map, scheduled: I.clock }
+  const neuroAlert = (typeof BIOMARKERS !== 'undefined') ? BIOMARKERS[e.id]?.alertLevel : null
 
   return (
     <div className="drawer-scrim scrim" onClick={onClose}>
@@ -138,7 +140,33 @@ function ElderDetail({ id, lang, onClose, onVisit, onReload }) {
           </div>
         </div>
 
+        {/* ── Tab bar ── */}
+        <div style={{ display: 'flex', borderBottom: '1px solid var(--line)', padding: '0 20px', flexShrink: 0 }}>
+          {[
+            { k: 'overview', en: 'Overview', zh: '概覽' },
+            { k: 'neuro',    en: 'Neuro',    zh: '神經', badge: neuroAlert },
+          ].map(t => (
+            <button key={t.k} onClick={() => setTab(t.k)} style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              padding: '10px 16px 9px', fontSize: 13,
+              fontWeight: tab === t.k ? 700 : 500,
+              color: tab === t.k ? 'var(--ink)' : 'var(--ink-faint)',
+              borderBottom: tab === t.k ? '2px solid var(--green)' : '2px solid transparent',
+              marginBottom: -1, display: 'flex', alignItems: 'center', gap: 5,
+            }}>
+              {L(lang, t.en, t.zh)}
+              {t.badge && (
+                <span style={{ fontSize: 9, fontWeight: 700, borderRadius: 99, padding: '1px 6px',
+                               background: t.badge === 'risk' ? 'var(--risk)' : 'var(--watch)', color: '#fff' }}>
+                  {t.badge === 'risk' ? '!' : '·'}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
         <div className="dbody">
+          {tab === 'overview' && <>
           <div className={'riskbanner ' + r.cls}>
             <div className="aic" style={{ color: r.cls === 'stable' ? 'var(--green-ink)' : r.cls === 'watch' ? 'var(--watch-ink)' : 'var(--risk-ink)' }}>{I.alert}</div>
             <div>
@@ -167,6 +195,9 @@ function ElderDetail({ id, lang, onClose, onVisit, onReload }) {
             </div>
           </div>
 
+          </>}
+
+          {tab === 'neuro' && <>
           {/* ── Voice biomarkers: live from calls, mock baseline fallback ── */}
           {(typeof BIOMARKERS !== 'undefined') && BIOMARKERS[e.id] && (() => {
             const thresholds = (typeof NEURO_THRESHOLDS !== 'undefined') ? NEURO_THRESHOLDS : {}
@@ -232,39 +263,60 @@ function ElderDetail({ id, lang, onClose, onVisit, onReload }) {
                     <div><div className="rt">{bm.alertLevel === 'risk' ? L(lang, 'Notable voice change — consider review', '語音出現顯著變化 — 考慮複診') : L(lang, 'Voice pattern shift — monitor closely', '語音模式有輕微偏移 — 密切跟進')}</div></div>
                   </div>
                 )}
-                <div style={{ display: 'flex', gap: 12, justifyContent: 'space-between', flexWrap: 'wrap' }}>
-                  {keys.map(k => {
+                {/* Primary: 2 composite signal graphs */}
+                <div style={{ display: 'flex', gap: 14, marginBottom: 14 }}>
+                  {['parkinson', 'neuroDec'].map(k => {
+                    const t = thresholds[k]
+                    if (!t) return null
+                    const values   = bm.days ? bm.days.map(d => d[k]) : bm.week.map(d => d[k])
+                    const level    = bm.metricAlerts[k]
+                    const today    = bm.today[k]
+                    const isLive   = liveFields.has(k)
+                    const numColor = level === 'risk' ? 'var(--risk-ink)' : level === 'watch' ? 'var(--watch-ink)' : 'var(--ink)'
+                    return (
+                      <div key={k} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <div style={{ fontSize: 10, color: 'var(--ink-faint)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          {L(lang, t.label_en, t.label_zh)}
+                          {isLive && <span style={{ marginLeft: 3, fontSize: 8, color: 'var(--stable)', fontWeight: 900 }}>●</span>}
+                        </div>
+                        <DrawerSparkline values={values} level={level} width={120} height={40} />
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                          <span style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--mono)', color: numColor, lineHeight: 1 }}>{today}</span>
+                          <span style={{ fontSize: 10, color: 'var(--ink-faint)' }}>{t.unit}</span>
+                          {level !== 'ok' && (
+                            <span className={'pill ' + level} style={{ fontSize: 9, padding: '1px 7px' }}>
+                              <span className="dot" />{level}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Secondary: 5 acoustic inputs compact */}
+                <div style={{ display: 'flex', gap: 10, paddingTop: 10, borderTop: '0.5px solid var(--line)', flexWrap: 'wrap' }}>
+                  {['rate', 'pauses', 'pitch', 'tremor', 'fluency'].map(k => {
                     const t = thresholds[k]
                     if (!t) return null
                     const values   = bm.week.map(d => d[k])
                     const level    = bm.metricAlerts[k]
                     const today    = bm.today[k]
-                    const base     = bm.baseline[k]
-                    const delta    = today - base
-                    const pct      = Math.abs(delta / (base || 1) * 100).toFixed(0)
-                    const worse    = t.higherBetter ? delta < 0 : delta > 0
-                    const numColor = level === 'risk' ? 'var(--risk-ink)' : level === 'watch' ? 'var(--watch-ink)' : 'var(--ink)'
                     const isLive   = liveFields.has(k)
+                    const numColor = level === 'risk' ? 'var(--risk-ink)' : level === 'watch' ? 'var(--watch-ink)' : 'var(--ink)'
                     return (
-                      <div key={k} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, minWidth: 58 }}>
-                        <div style={{ fontSize: 10, color: 'var(--ink-faint)', fontWeight: 600, textTransform: 'uppercase',
-                                      letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                      <div key={k} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, minWidth: 50 }}>
+                        <div style={{ fontSize: 9, color: 'var(--ink-faint)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>
                           {L(lang, t.label_en, t.label_zh)}
-                          {isLive && <span style={{ marginLeft: 3, fontSize: 8, color: 'var(--stable)', fontWeight: 900 }}>●</span>}
+                          {isLive && <span style={{ marginLeft: 2, fontSize: 7, color: 'var(--stable)', fontWeight: 900 }}>●</span>}
                         </div>
-                        <DrawerSparkline values={values} level={level} />
-                        <span style={{ fontSize: 15, fontWeight: 800, fontFamily: 'var(--mono)', color: numColor, lineHeight: 1 }}>
+                        <DrawerSparkline values={values} level={level} width={52} height={22} />
+                        <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'var(--mono)', color: numColor, lineHeight: 1 }}>
                           {k === 'pauses' ? today.toFixed(2) : String(today)}
-                          <span style={{ fontSize: 9, fontWeight: 400, color: 'var(--ink-faint)', marginLeft: 2 }}>{t.unit}</span>
+                          <span style={{ fontSize: 8, fontWeight: 400, color: 'var(--ink-faint)', marginLeft: 1 }}>{t.unit}</span>
                         </span>
-                        {+pct > 2
-                          ? <span style={{ fontSize: 10, fontWeight: 600, color: level === 'ok' ? 'var(--ink-faint)' : numColor, fontFamily: 'var(--mono)' }}>
-                              {worse ? '↓' : '↑'} {pct}%
-                            </span>
-                          : <span style={{ fontSize: 10, color: 'var(--ink-faint)' }}>stable</span>
-                        }
                         {level !== 'ok' && (
-                          <span className={'pill ' + level} style={{ fontSize: 9, padding: '1px 6px' }}>
+                          <span className={'pill ' + level} style={{ fontSize: 8, padding: '1px 5px' }}>
                             <span className="dot" />{level}
                           </span>
                         )}
@@ -281,7 +333,9 @@ function ElderDetail({ id, lang, onClose, onVisit, onReload }) {
               </div>
             )
           })()}
+          </>}
 
+          {tab === 'overview' && <>
           <div className="dcard card">
             <h3>{I.clock} {L(lang, 'Recent check-ins', '近期跟進')}</h3>
             <div className="tl">
@@ -327,6 +381,7 @@ function ElderDetail({ id, lang, onClose, onVisit, onReload }) {
               </div>
             </div>
           </div>
+          </>}
         </div>
       </div>
     </div>
