@@ -202,11 +202,15 @@ app.get('/family/elder', async (c) => {
 
   let worker: any = null
   if ((elder as any)?.assigned_worker_id) {
-    const { data: w } = await getAdminClient().from('workers')
-      .select('name_en,name_zh,role_en,role_zh,phone')
-      .eq('id', (elder as any).assigned_worker_id)
-      .single()
-    worker = w
+    try {
+      const { data: w } = await getAdminClient().from('workers')
+        .select('name_en,name_zh,role_en,role_zh,phone')
+        .eq('id', (elder as any).assigned_worker_id)
+        .single()
+      worker = w
+    } catch {
+      // SUPABASE_SERVICE_ROLE_KEY not configured — fall back to the default worker below
+    }
   }
 
   return c.json({
