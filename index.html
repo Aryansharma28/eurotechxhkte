@@ -3,277 +3,309 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CareBridge 康橋 — Scheme</title>
-<link rel="stylesheet" href="styles/system.css">
+<title>CareBridge 康橋 — Post-discharge elder care</title>
 <style>
-  body { background: var(--bg); }
-  .wrap { max-width: 1140px; margin: 0 auto; padding: 0 28px; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', system-ui, sans-serif;
+    background: #0A0A0B; color: #fff;
+    -webkit-font-smoothing: antialiased; overflow-x: hidden;
+  }
+  a { text-decoration: none; color: inherit; }
+  :root { --green: #2EAA5B; --line: rgba(255,255,255,0.07); --ink-muted: rgba(255,255,255,0.45); --ink-faint: rgba(255,255,255,0.25); }
 
-  /* top bar */
-  .top { position: sticky; top: 0; z-index: 20; background: oklch(0.975 0.007 150 / 0.86); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
-  .top .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
-  .brand { display: flex; align-items: center; gap: 11px; font-weight: 800; font-size: 18px; letter-spacing: -0.02em; }
-  .mark { width: 30px; height: 30px; border-radius: 9px; background: var(--green); display: grid; place-items: center; box-shadow: 0 2px 6px oklch(0.5 0.1 158 / .3); }
-  .mark::before { content: ""; width: 15px; height: 15px; border: 2.6px solid #fff; border-radius: 50% 50% 50% 2px; transform: rotate(45deg); }
-  .brand .zh { font-weight: 700; color: var(--ink-soft); font-size: 15px; }
-  .top nav { display: flex; gap: 4px; }
-  .top nav a { padding: 8px 13px; border-radius: 999px; font-weight: 600; font-size: 14px; color: var(--ink-soft); }
-  .top nav a:hover { background: var(--surface); color: var(--ink); }
+  /* NAV */
+  .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 56px; display: flex; align-items: center; padding: 0 28px; background: rgba(10,10,11,0.80); backdrop-filter: blur(20px) saturate(180%); border-bottom: 1px solid var(--line); }
+  .nav-brand { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 15px; letter-spacing: -0.02em; margin-right: auto; }
+  .nav-mark { width: 26px; height: 26px; border-radius: 7px; background: var(--green); display: grid; place-items: center; flex: none; }
+  .nav-mark::before { content: ""; width: 11px; height: 11px; border: 2px solid rgba(255,255,255,0.95); border-radius: 50% 50% 50% 2px; transform: rotate(45deg); display: block; }
+  .nav-zh { color: var(--ink-faint); font-weight: 400; font-size: 13px; }
+  .nav-links { display: flex; gap: 2px; margin-right: 20px; }
+  .nav-link { font-size: 13.5px; font-weight: 500; color: var(--ink-muted); padding: 6px 12px; border-radius: 7px; transition: background 0.12s, color 0.12s; }
+  .nav-link:hover { background: rgba(255,255,255,0.06); color: #fff; }
+  .nav-cta { background: var(--green); color: #fff; border: none; border-radius: 8px; padding: 7px 16px; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: opacity 0.12s; letter-spacing: -0.01em; }
+  .nav-cta:hover { opacity: 0.85; }
 
-  /* hero */
-  .hero { padding: 76px 0 30px; }
-  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--green-ink); background: var(--green-tint); padding: 6px 13px; border-radius: 999px; }
-  .hero h1 { font-size: 52px; line-height: 1.04; margin: 22px 0 0; max-width: 17ch; letter-spacing: -0.025em; }
-  .hero h1 em { font-style: normal; color: var(--green); }
-  .hero .sub { font-size: 19px; line-height: 1.5; color: var(--ink-soft); max-width: 60ch; margin-top: 20px; }
-  .hero .zhsub { font-family: var(--hk); font-size: 16px; color: var(--ink-faint); margin-top: 8px; }
+  /* HERO */
+  .hero { padding: 128px 28px 0; max-width: 1100px; margin: 0 auto; position: relative; }
+  .hero-glow { position: absolute; top: 80px; left: -60px; width: 560px; height: 320px; background: radial-gradient(ellipse at center, rgba(46,170,91,0.10) 0%, transparent 70%); pointer-events: none; }
+  .hero-badge { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 500; color: var(--ink-muted); border: 1px solid var(--line); background: rgba(255,255,255,0.03); padding: 5px 14px; border-radius: 6px; margin-bottom: 28px; }
+  .hero-badge-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); flex: none; animation: blink 2.4s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .hero h1 { font-size: clamp(40px, 5.8vw, 72px); font-weight: 800; letter-spacing: -0.04em; line-height: 1.03; max-width: 16ch; margin-bottom: 22px; color: #fff; }
+  .hero h1 .accent { color: var(--green); }
+  .hero-sub { font-size: 18px; line-height: 1.6; color: var(--ink-muted); max-width: 48ch; margin-bottom: 36px; font-weight: 400; }
+  .hero-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 64px; }
+  .btn-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--green); color: #fff; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; padding: 11px 22px; border-radius: 10px; box-shadow: 0 0 0 1px rgba(46,170,91,0.40), 0 4px 20px rgba(46,170,91,0.30); transition: transform 0.12s, box-shadow 0.12s; }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 0 0 1px rgba(46,170,91,0.5), 0 6px 28px rgba(46,170,91,0.35); }
+  .btn-secondary { display: inline-flex; align-items: center; gap: 7px; font-size: 15px; font-weight: 500; color: var(--ink-muted); transition: color 0.12s; }
+  .btn-secondary:hover { color: #fff; }
+  .btn-secondary .arr { transition: transform 0.12s; }
+  .btn-secondary:hover .arr { transform: translateX(3px); }
 
-  /* problem strip */
-  .strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 40px 0 8px; }
-  .stat { padding: 22px; }
-  .stat .n { font-size: 38px; font-weight: 800; letter-spacing: -0.03em; color: var(--green); font-family: var(--mono); }
-  .stat .l { color: var(--ink-soft); font-size: 14.5px; line-height: 1.45; margin-top: 6px; }
+  /* SCREENSHOT */
+  .screenshot-wrap { position: relative; border-radius: 14px 14px 0 0; border: 1px solid rgba(255,255,255,0.09); border-bottom: none; overflow: hidden; background: #141416; box-shadow: 0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08); }
+  .screenshot-bar { height: 36px; background: #1A1A1C; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; padding: 0 14px; gap: 7px; flex: none; }
+  .screenshot-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .screenshot-url { flex: 1; max-width: 260px; margin: 0 auto; height: 20px; background: rgba(255,255,255,0.05); border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: rgba(255,255,255,0.25); }
+  .screenshot-wrap img { width: 100%; display: block; max-height: 520px; object-fit: cover; object-position: top; }
+  .screenshot-fade { position: absolute; bottom: 0; left: 0; right: 0; height: 160px; background: linear-gradient(to bottom, transparent, #0A0A0B); pointer-events: none; }
 
-  section.block { padding: 46px 0; border-top: 1px solid var(--line); margin-top: 46px; }
-  .sec-label { font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); }
-  .sec-h { font-size: 30px; margin: 12px 0 8px; letter-spacing: -0.02em; }
-  .sec-p { color: var(--ink-soft); font-size: 16.5px; line-height: 1.55; max-width: 66ch; }
+  /* METRICS */
+  .metrics { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .metrics-inner { max-width: 1100px; margin: 0 auto; padding: 0 28px; display: grid; grid-template-columns: repeat(3,1fr); }
+  .metric { padding: 48px 32px; border-right: 1px solid var(--line); }
+  .metric:last-child { border-right: none; }
+  .metric-n { font-size: 52px; font-weight: 800; letter-spacing: -0.045em; line-height: 1; color: #fff; margin-bottom: 12px; font-variant-numeric: tabular-nums; }
+  .metric-l { font-size: 14.5px; line-height: 1.6; color: var(--ink-muted); max-width: 24ch; }
+  .metric-l strong { color: rgba(255,255,255,0.80); font-weight: 600; }
 
-  /* role / flow map */
-  .flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 30px; }
-  .role { padding: 24px; position: relative; overflow: hidden; }
-  .role .ico { width: 46px; height: 46px; border-radius: 13px; display: grid; place-items: center; margin-bottom: 16px; }
-  .role h3 { font-size: 19px; }
-  .role .zh { font-family: var(--hk); color: var(--ink-soft); font-weight: 600; font-size: 14px; margin-top: 2px; }
-  .role p { color: var(--ink-soft); font-size: 14.5px; line-height: 1.5; margin-top: 12px; }
-  .role .device { margin-top: 14px; font-family: var(--mono); font-size: 11.5px; color: var(--ink-faint); letter-spacing: 0.02em; text-transform: uppercase; }
-  .role.elder  .ico { background: var(--calm-bg); color: var(--calm); }
-  .role.child  .ico { background: var(--green-tint-2); color: var(--green-ink); }
-  .role.worker .ico { background: var(--watch-bg); color: var(--watch-ink); }
-  .role .ico svg { width: 24px; height: 24px; }
+  /* SECTION */
+  .section { padding: 96px 28px; max-width: 1100px; margin: 0 auto; }
+  .section-label { font-size: 11.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--green); margin-bottom: 14px; }
+  .section h2 { font-size: clamp(28px, 3.5vw, 42px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.08; color: #fff; margin-bottom: 16px; }
+  .section-p { font-size: 17px; line-height: 1.65; color: var(--ink-muted); max-width: 50ch; }
 
-  .loop { display:flex; align-items:center; gap:14px; justify-content:center; margin-top: 26px; flex-wrap: wrap; font-size: 14px; color: var(--ink-soft); }
-  .loop .node { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 9px 16px; font-weight: 600; box-shadow: var(--shadow-sm); }
-  .loop .arr { color: var(--green); font-weight: 700; }
+  /* ROLES */
+  .roles { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--line); border-radius: 16px; overflow: hidden; margin-top: 48px; }
+  .role-card { background: #111113; padding: 32px 28px; display: flex; flex-direction: column; transition: background 0.12s; }
+  .role-card:hover { background: #141416; }
+  .role-num { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 24px; }
+  .role-ico { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; margin-bottom: 20px; }
+  .role-ico svg { width: 20px; height: 20px; }
+  .role-ico.c1 { background: rgba(0,122,255,0.12); color: #4D9FFF; }
+  .role-ico.c2 { background: rgba(46,170,91,0.12); color: #4DC97A; }
+  .role-ico.c3 { background: rgba(255,159,10,0.12); color: #FFBE48; }
+  .role-title { font-size: 18px; font-weight: 700; letter-spacing: -0.025em; color: #fff; }
+  .role-zh { font-size: 12.5px; color: var(--ink-faint); margin: 4px 0 14px; }
+  .role-desc { font-size: 14px; line-height: 1.65; color: var(--ink-muted); flex: 1; }
+  .role-channel { margin-top: 24px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); }
 
-  /* prototype cards */
-  .protos { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 30px; }
-  .proto { display: block; padding: 0; overflow: hidden; transition: transform .12s ease, box-shadow .15s ease; }
-  .proto:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
-  .proto .head { padding: 22px 24px 0; display: flex; align-items: center; justify-content: space-between; }
-  .proto h3 { font-size: 20px; }
-  .proto .meta { color: var(--ink-soft); font-size: 14.5px; line-height: 1.5; padding: 10px 24px 0; }
-  .proto .prev { margin: 18px; border-radius: var(--r); height: 168px; overflow: hidden; border: 1px solid var(--line); position: relative; }
-  .proto .go { display:inline-flex; align-items:center; gap:6px; color: var(--green); font-weight: 700; font-size: 14px; padding: 0 24px 22px; }
-  .proto.span2 { grid-column: 1 / -1; }
-  .proto.span2 .prev { height: 230px; }
-  .tagrow { display:flex; gap:7px; padding: 14px 24px 0; flex-wrap: wrap; }
-  .tag { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); background: var(--bg-sink); padding: 4px 9px; border-radius: 7px; }
+  /* PROTOTYPES */
+  .protos-section { background: #F5F5F7; padding: 96px 28px; }
+  .protos-inner { max-width: 1100px; margin: 0 auto; }
+  .protos-section .section-label { color: #2EAA5B; }
+  .protos-h2 { font-size: clamp(28px,3.5vw,42px); font-weight:800; letter-spacing:-0.035em; line-height:1.08; color:#000; margin-bottom:16px; }
+  .protos-p  { font-size:17px; line-height:1.65; color:rgba(0,0,0,0.52); max-width:50ch; }
+  .protos { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 48px; }
+  .proto { display: flex; flex-direction: column; background: #fff; border-radius: 18px; overflow: hidden; border: 1px solid rgba(0,0,0,0.07); box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04); transition: transform 0.13s, box-shadow 0.15s; }
+  .proto:hover { transform: translateY(-3px); box-shadow: 0 2px 4px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.10); }
+  .proto.wide { grid-column: 1 / -1; flex-direction: row; align-items: stretch; }
+  .proto-body { padding: 28px 28px 20px; flex: 1; display: flex; flex-direction: column; }
+  .proto-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 12px; border-radius: 6px; margin-bottom: 14px; align-self: flex-start; }
+  .proto-tag::before { content:""; width:5px; height:5px; border-radius:50%; flex:none; }
+  .proto-tag.t1 { color: #9B6400; background: rgba(255,159,10,0.12); } .proto-tag.t1::before { background: #FF9F0A; }
+  .proto-tag.t2 { color: #1A6B3A; background: rgba(46,170,91,0.10); } .proto-tag.t2::before { background: #2EAA5B; }
+  .proto-tag.t3 { color: #004FCC; background: rgba(0,122,255,0.10); } .proto-tag.t3::before { background: #007AFF; }
+  .proto-title { font-size: 21px; font-weight: 700; letter-spacing: -0.025em; color: #000; }
+  .proto-desc { font-size: 14px; line-height: 1.6; color: rgba(0,0,0,0.52); margin: 10px 0 0; flex: 1; }
+  .proto-footer { display: flex; align-items: center; justify-content: space-between; padding: 16px 28px 24px; }
+  .proto-link { font-size: 14.5px; font-weight: 600; color: #2EAA5B; }
+  .proto-arrow { font-size: 16px; color: rgba(0,0,0,0.18); transition: color 0.12s, transform 0.12s; }
+  .proto:hover .proto-arrow { color: #2EAA5B; transform: translateX(4px); }
+  .proto-preview { overflow: hidden; flex: none; }
+  .proto.wide .proto-preview { width: 340px; flex: none; border-left: 1px solid rgba(0,0,0,0.07); }
+  .proto:not(.wide) .proto-preview { height: 160px; border-top: 1px solid rgba(0,0,0,0.07); }
 
-  /* mini dashboard preview */
-  .mini { width: 100%; height: 100%; background: var(--bg-sink); padding: 12px; display: grid; gap: 8px; grid-template-columns: 64px 1fr; }
-  .mini .side { background: var(--green-deep); border-radius: 8px; }
-  .mini .col { display: grid; gap: 8px; grid-template-rows: 26px 1fr; }
-  .mini .bar { background: var(--surface); border-radius: 7px; border: 1px solid var(--line); }
-  .mini .grid5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; }
-  .mini .cardlet { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px; display: flex; flex-direction: column; gap: 5px; }
-  .mini .cardlet .av { width: 18px; height: 18px; border-radius: 50%; background: var(--green-tint-2); }
-  .mini .cardlet .ln { height: 4px; border-radius: 9px; background: var(--line); }
-  .mini .cardlet .ln.s { width: 60%; }
-  .mini .cardlet .st { height: 6px; width: 34px; border-radius: 9px; margin-top: auto; }
-  .mini .cardlet:nth-child(2) .st { background: var(--watch); }
-  .mini .cardlet:nth-child(4) .st { background: var(--risk); }
-  .mini .cardlet .st { background: var(--stable); }
+  /* mockups */
+  .mock-sw { width:100%; height:100%; background:#F2F2F7; display:grid; grid-template-columns:50px 1fr; gap:8px; padding:10px; }
+  .mock-sw-side { background:#fff; border-radius:7px; border:1px solid rgba(0,0,0,0.06); }
+  .mock-sw-body { display:flex; flex-direction:column; gap:7px; }
+  .mock-sw-bar { height:22px; background:#fff; border-radius:6px; border:1px solid rgba(0,0,0,0.06); width:65%; }
+  .mock-sw-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:5px; flex:1; }
+  .mock-sw-card { background:#fff; border-radius:8px; padding:7px; display:flex; flex-direction:column; gap:4px; border:1px solid rgba(0,0,0,0.06); }
+  .mock-sw-av { width:14px; height:14px; border-radius:50%; }
+  .mock-sw-ln { height:3px; border-radius:3px; background:rgba(0,0,0,0.07); }
+  .mock-sw-st { height:4px; border-radius:3px; margin-top:auto; }
+  .mock-fam { width:100%; height:100%; background:linear-gradient(160deg,rgba(46,170,91,0.08),#F2F2F7); display:grid; place-items:center; }
+  .mock-fam-phone { width:80px; height:130px; background:#fff; border-radius:16px; border:2px solid rgba(0,0,0,0.12); padding:9px 8px; display:flex; flex-direction:column; gap:6px; box-shadow:0 6px 20px rgba(0,0,0,0.10); }
+  .mock-fam-hero { height:34px; border-radius:8px; background:linear-gradient(135deg,#2EAA5B,#1A7A40); }
+  .mock-fam-ln { height:4px; border-radius:3px; background:rgba(0,0,0,0.08); }
+  .mock-fam-card { flex:1; background:rgba(0,0,0,0.04); border-radius:7px; }
+  .mock-call { width:100%; height:100%; background:#1C1C1E; display:grid; place-items:center; }
+  .mock-call-ring { width:52px; height:52px; border-radius:50%; background:#2EAA5B; display:grid; place-items:center; box-shadow:0 0 0 10px rgba(46,170,91,0.14),0 0 0 22px rgba(46,170,91,0.07); }
+  .mock-call-ring svg { width:22px; height:22px; }
 
-  .phoneprev { width:100%; height:100%; background: linear-gradient(180deg, var(--green-tint) 0%, var(--bg-sink) 100%); display:grid; place-items:center; }
-  .phoneprev .scr { width: 116px; height: 200px; background: var(--surface); border-radius: 18px; border: 4px solid oklch(0.3 0.02 158); box-shadow: var(--shadow); padding: 12px 11px; display:flex; flex-direction:column; gap: 8px; }
-  .phoneprev .face { width: 42px; height: 42px; border-radius: 50%; background: var(--green-tint-2); margin: 4px auto 2px; }
-  .phoneprev .ln { height: 6px; border-radius: 9px; background: var(--line); }
-  .phoneprev .big { height: 30px; border-radius: 9px; background: var(--stable-bg); border: 1px solid var(--green-tint-2); }
+  /* CLOSER */
+  .closer { padding: 120px 28px; text-align: center; background: #0A0A0B; border-top: 1px solid var(--line); }
+  .closer h2 { font-size: clamp(30px, 5vw, 56px); font-weight: 800; letter-spacing: -0.04em; line-height: 1.06; color: #fff; max-width: 20ch; margin: 0 auto 20px; }
+  .closer h2 .g { color: var(--green); }
+  .closer p { font-size: 17px; color: var(--ink-muted); max-width: 50ch; margin: 0 auto 48px; line-height: 1.65; }
+  .closer-cta { display: inline-flex; align-items: center; gap: 8px; background: #fff; color: #000; font-size: 15px; font-weight: 700; padding: 13px 28px; border-radius: 10px; transition: background 0.12s; }
+  .closer-cta:hover { background: #F0F0F0; }
 
-  .callprev { width:100%; height:100%; background: oklch(0.3 0.02 158); display:grid; place-items:center; }
-  .callprev .ph { width: 108px; height: 196px; background: oklch(0.22 0.015 158); border-radius: 20px; border: 4px solid oklch(0.4 0.02 158); display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 12px; color: #fff; }
-  .callprev .ring { width: 50px; height: 50px; border-radius: 50%; background: var(--green); display:grid; place-items:center; box-shadow: 0 0 0 8px oklch(0.56 0.108 158 / 0.25), 0 0 0 16px oklch(0.56 0.108 158 / 0.12); }
-  .callprev .lbl { font-family: var(--mono); font-size: 10px; color: oklch(0.8 0.02 158); }
+  /* FOOTER */
+  footer { background: #0A0A0B; border-top: 1px solid var(--line); padding: 24px 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .footer-brand { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; color:rgba(255,255,255,0.55); }
+  .footer-mark { width:22px; height:22px; border-radius:6px; background:var(--green); display:grid; place-items:center; }
+  .footer-mark::before { content:""; width:9px; height:9px; border:1.8px solid rgba(255,255,255,0.95); border-radius:50% 50% 50% 2px; transform:rotate(45deg); display:block; }
+  .footer-copy { font-size:13px; color:var(--ink-faint); }
 
-  /* design system */
-  .ds { display: grid; grid-template-columns: 1.1fr 1fr; gap: 18px; margin-top: 28px; }
-  .panel { padding: 22px; }
-  .panel h4 { font-size: 13px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); font-weight: 600; margin-bottom: 16px; }
-  .swatches { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-  .sw { border-radius: var(--r-sm); height: 60px; border: 1px solid var(--line); display:flex; align-items:flex-end; padding: 7px; }
-  .sw span { font-family: var(--mono); font-size: 10px; background: oklch(1 0 0 / 0.85); padding: 2px 5px; border-radius: 5px; }
-  .typerow { display:flex; align-items:baseline; gap: 14px; padding: 9px 0; border-bottom: 1px solid var(--line-soft); }
-  .typerow:last-child { border: 0; }
-  .typerow .k { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); width: 74px; flex: none; }
-  .comprow { display:flex; gap: 10px; flex-wrap: wrap; align-items:center; }
-
-  footer { padding: 50px 0 70px; color: var(--ink-faint); font-size: 13.5px; }
-  @media (max-width: 880px) {
-    .strip, .flow, .protos, .ds { grid-template-columns: 1fr; }
-    .hero h1 { font-size: 38px; }
-    .top nav { display: none; }
+  @media (max-width: 820px) {
+    .nav-links { display: none; }
+    .metrics-inner { grid-template-columns: 1fr; }
+    .metric { border-right: none; border-bottom: 1px solid var(--line); padding: 36px 24px; }
+    .metric:last-child { border-bottom: none; }
+    .roles { grid-template-columns: 1fr; }
+    .protos { grid-template-columns: 1fr; }
+    .proto.wide { flex-direction: column; }
+    .proto.wide .proto-preview { width: 100%; height: 160px; border-left: none; border-top: 1px solid rgba(0,0,0,0.07); }
   }
 </style>
 </head>
 <body>
-<header class="top">
-  <div class="wrap">
-    <div class="brand"><span class="mark"></span> CareBridge <span class="zh">康橋</span></div>
-    <nav>
-      <a href="#system">The system</a>
-      <a href="#prototypes">Prototypes</a>
-      <a href="#ds">Design</a>
-      <a href="Spec.html">Spec for Claude Code →</a>
-    </nav>
+
+<nav class="nav">
+  <div class="nav-brand"><span class="nav-mark"></span>CareBridge <span class="nav-zh">康橋</span></div>
+  <div class="nav-links">
+    <a class="nav-link" href="#system">The system</a>
+    <a class="nav-link" href="#prototypes">Prototypes</a>
   </div>
-</header>
+  <a class="nav-cta" href="Social Worker Dashboard.html">Dashboard →</a>
+</nav>
 
-<main>
-<div class="wrap">
-  <section class="hero">
-    <span class="eyebrow">● Transitional care · Hong Kong pilot</span>
-    <h1>Keep discharged elders well at home — so they <em>don't come back</em>.</h1>
-    <p class="sub">CareBridge bridges the gap after a hospital discharge. A frictionless daily phone call to the elder, a reassuring app for their adult child, and one calm dashboard where a social worker keeps watch over five people — catching the small slips before they become a readmission.</p>
-    <p class="zhsub">出院之後，繼續守護。每日一通電話、子女安心、社工掌握全局 — 在小問題變成再入院之前。</p>
-
-    <div class="strip">
-      <div class="card stat"><div class="n">≈ 1 in 5</div><div class="l">elderly patients are readmitted within 30 days of discharge — most are preventable.</div></div>
-      <div class="card stat"><div class="n">0 apps</div><div class="l">for the elder. They just answer a phone call. No login, no screen, no friction.</div></div>
-      <div class="card stat"><div class="n">5 : 1</div><div class="l">one social worker, five elders, tracked daily. The dashboard does the remembering.</div></div>
+<div class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-badge"><span class="hero-badge-dot"></span>Post-discharge care · Hong Kong pilot</div>
+  <h1>The care that happens <span class="accent">after</span> the hospital.</h1>
+  <p class="hero-sub">A frictionless daily phone call, a reassuring family app, and one dashboard that keeps five elders from falling back through the gap.</p>
+  <div class="hero-actions">
+    <a class="btn-primary" href="Social Worker Dashboard.html">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 8h4M8 12h8"/></svg>
+      Open dashboard
+    </a>
+    <a class="btn-secondary" href="Family App.html">Family app <span class="arr">→</span></a>
+  </div>
+  <div class="screenshot-wrap">
+    <div class="screenshot-bar">
+      <div class="screenshot-dot" style="background:#FF5F57"></div>
+      <div class="screenshot-dot" style="background:#FFBD2E"></div>
+      <div class="screenshot-dot" style="background:#28CA41"></div>
+      <div class="screenshot-url">Social Worker Dashboard · CareBridge</div>
     </div>
-  </section>
-
-  <section class="block" id="system">
-    <div class="sec-label">How it fits together</div>
-    <h2 class="sec-h">Three roles, one care loop</h2>
-    <p class="sec-p">Each role sees only what they need, at the fidelity they can handle. Information flows from the daily call into a shared picture that the family and social worker both act on.</p>
-
-    <div class="flow">
-      <div class="card role elder">
-        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 4h3l1.5 4-2 1.5a11 11 0 0 0 5 5l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A16 16 0 0 1 3 6.2 2 2 0 0 1 5 4z"/></svg></div>
-        <h3>The Elder</h3>
-        <div class="zh">長者 · 受照顧者</div>
-        <p>Gets a warm daily check-in <strong>phone call</strong>. Answers a few simple questions in Cantonese. That's it — no app to learn.</p>
-        <div class="device">Channel · Voice call</div>
-      </div>
-      <div class="card role child">
-        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg></div>
-        <h3>The Adult Child</h3>
-        <div class="zh">子女 · 家屬</div>
-        <p>A simple phone app. Sees at a glance that mum is okay today, reads the plain-language summary, gets nudged only when it matters.</p>
-        <div class="device">Phone app · iOS / Android</div>
-      </div>
-      <div class="card role worker">
-        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 20h10M8 8h4M8 12h8"/></svg></div>
-        <h3>The Social Worker</h3>
-        <div class="zh">社工 · 個案經理</div>
-        <p>The command centre. Five elders, their daily activities, risk flags and home visits — all on one screen. Tablet mode for visits.</p>
-        <div class="device">Web dashboard + tablet</div>
-      </div>
-    </div>
-
-    <div class="loop">
-      <span class="node">📞 Daily call</span><span class="arr">→</span>
-      <span class="node">Activity check answered</span><span class="arr">→</span>
-      <span class="node">Dashboard updates</span><span class="arr">→</span>
-      <span class="node">Family reassured</span><span class="arr">→</span>
-      <span class="node">Worker acts on flags</span>
-    </div>
-  </section>
-
-  <section class="block" id="prototypes">
-    <div class="sec-label">Click through</div>
-    <h2 class="sec-h">The prototypes</h2>
-    <p class="sec-p">Interactive, hi-fi, bilingual. Start with the social worker dashboard — it's the heart of the product.</p>
-
-    <div class="protos">
-      <a class="proto card span2" href="Social Worker Dashboard.html">
-        <div class="head"><h3>Social Worker Dashboard</h3><span class="pill watch"><span class="dot"></span>Primary · heavy</span></div>
-        <p class="meta">Caseload of five discharged elders. Daily activity tracking, readmission-risk triage, an alerts feed, and a deep-dive on each person. Built for a calm morning routine, not alarm fatigue.</p>
-        <div class="tagrow"><span class="tag">caseload</span><span class="tag">ADL tracking</span><span class="tag">risk triage</span><span class="tag">alerts</span><span class="tag">elder detail</span><span class="tag">tablet visit mode</span></div>
-        <div class="prev"><div class="mini">
-          <div class="side"></div>
-          <div class="col"><div class="bar"></div><div class="grid5">
-            <div class="cardlet"><div class="av"></div><div class="ln"></div><div class="ln s"></div><div class="st"></div></div>
-            <div class="cardlet"><div class="av"></div><div class="ln"></div><div class="ln s"></div><div class="st"></div></div>
-            <div class="cardlet"><div class="av"></div><div class="ln"></div><div class="ln s"></div><div class="st"></div></div>
-            <div class="cardlet"><div class="av"></div><div class="ln"></div><div class="ln s"></div><div class="st"></div></div>
-            <div class="cardlet"><div class="av"></div><div class="ln"></div><div class="ln s"></div><div class="st"></div></div>
-          </div></div>
-        </div></div>
-        <span class="go">Open dashboard →</span>
-      </a>
-
-      <a class="proto card" href="Family App.html">
-        <div class="head"><h3>Family App</h3><span class="pill calm"><span class="dot"></span>Adult child</span></div>
-        <p class="meta">A single, reassuring screen for the adult child. Big status, plain-language summary, gentle nudges.</p>
-        <div class="prev"><div class="phoneprev"><div class="scr">
-          <div class="face"></div><div class="big"></div><div class="ln" style="width:80%"></div><div class="ln" style="width:60%"></div><div class="ln" style="width:90%"></div>
-        </div></div></div>
-        <span class="go">Open family app →</span>
-      </a>
-
-      <a class="proto card" href="Elder Call.html">
-        <div class="head"><h3>The Daily Call</h3><span class="pill calm"><span class="dot"></span>Elder · no app</span></div>
-        <p class="meta">How the frictionless check-in works for the elder — and what it quietly captures behind the scenes.</p>
-        <div class="prev"><div class="callprev"><div class="ph">
-          <div class="ring"><svg viewBox="0 0 24 24" width="22" fill="#fff"><path d="M5 4h3l1.5 4-2 1.5a11 11 0 0 0 5 5l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A16 16 0 0 1 3 6.2 2 2 0 0 1 5 4z"/></svg></div>
-          <div class="lbl">CareBridge calling…</div>
-        </div></div></div>
-        <span class="go">See the call flow →</span>
-      </a>
-    </div>
-  </section>
-
-  <section class="block" id="ds">
-    <div class="sec-label">Foundations</div>
-    <h2 class="sec-h">The look &amp; feel</h2>
-    <p class="sec-p">Warm, trustworthy, and maximally legible. Green signals health and calm; amber and red are reserved strictly for triage so they never lose their meaning.</p>
-
-    <div class="ds">
-      <div class="card panel">
-        <h4>Colour</h4>
-        <div class="swatches">
-          <div class="sw" style="background:var(--green)"><span>green</span></div>
-          <div class="sw" style="background:var(--green-deep)"><span>deep</span></div>
-          <div class="sw" style="background:var(--green-tint)"><span>tint</span></div>
-          <div class="sw" style="background:var(--ink)"><span style="color:#fff;background:oklch(0.2 0 0/.6)">ink</span></div>
-          <div class="sw" style="background:var(--stable)"><span>stable</span></div>
-          <div class="sw" style="background:var(--watch)"><span>watch</span></div>
-          <div class="sw" style="background:var(--risk)"><span>risk</span></div>
-          <div class="sw" style="background:var(--bg-sink)"><span>bg</span></div>
-        </div>
-        <h4 style="margin-top:22px">Status language</h4>
-        <div class="comprow">
-          <span class="pill stable"><span class="dot"></span>Stable · 穩定</span>
-          <span class="pill watch"><span class="dot"></span>Watch · 留意</span>
-          <span class="pill risk"><span class="dot"></span>At risk · 高危</span>
-          <span class="pill calm"><span class="dot"></span>Call done · 已致電</span>
-        </div>
-      </div>
-
-      <div class="card panel">
-        <h4>Type — Hanken Grotesk + Noto Sans HK</h4>
-        <div class="typerow"><span class="k">Display</span><span style="font-size:27px;font-weight:800;letter-spacing:-0.02em">Wong Mei-ling</span></div>
-        <div class="typerow"><span class="k">中文</span><span class="zh" style="font-size:24px;font-weight:700">黃美玲 · 出院第 8 天</span></div>
-        <div class="typerow"><span class="k">Body</span><span style="font-size:16px;color:var(--ink-soft)">Took morning medication. Ate breakfast.</span></div>
-        <div class="typerow"><span class="k">Data</span><span class="mono" style="font-size:15px">BP 142/88 · ❤ 76 bpm</span></div>
-        <h4 style="margin-top:18px">Components</h4>
-        <div class="comprow">
-          <button class="btn primary">Log a visit</button>
-          <button class="btn ghost">View detail</button>
-          <span class="avatar" style="width:38px;height:38px">黃</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <footer>
-    CareBridge 康橋 · Hong Kong transitional-care pilot · Prototype &amp; scheme for build handoff.
-    <a href="Spec.html" style="color:var(--green);font-weight:600">Read the full spec for Claude Code →</a>
-  </footer>
+    <img src="sw-today-neuro.png" alt="CareBridge social worker dashboard">
+    <div class="screenshot-fade"></div>
+  </div>
 </div>
-</main>
+
+<div class="metrics">
+  <div class="metrics-inner">
+    <div class="metric"><div class="metric-n">≈ 1 in 5</div><div class="metric-l">elderly patients <strong>readmitted within 30 days</strong> of discharge — most are preventable.</div></div>
+    <div class="metric"><div class="metric-n">0 apps</div><div class="metric-l">for the elder. They <strong>just answer a phone call</strong> — no login, no screen, no friction.</div></div>
+    <div class="metric"><div class="metric-n">5 : 1</div><div class="metric-l">one social worker, five elders, <strong>tracked every single day</strong>. The dashboard remembers.</div></div>
+  </div>
+</div>
+
+<section id="system">
+  <div class="section">
+    <div class="section-label">The system</div>
+    <h2>Three roles, one care loop.</h2>
+    <p class="section-p">Each role sees only what they need. Information flows from the daily call into a shared picture — acted on by family and social worker alike.</p>
+    <div class="roles">
+      <div class="role-card">
+        <div class="role-num">01</div>
+        <div class="role-ico c1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 4h3l1.5 4-2 1.5a11 11 0 0 0 5 5l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A16 16 0 0 1 3 6.2 2 2 0 0 1 5 4z"/></svg></div>
+        <div class="role-title">The Elder</div>
+        <div class="role-zh">長者 · 受照顧者</div>
+        <div class="role-desc">Receives a warm daily check-in call in Cantonese. Answers simple questions about medication, meals, and mobility. No app to learn. Just pick up.</div>
+        <div class="role-channel">Voice call only</div>
+      </div>
+      <div class="role-card">
+        <div class="role-num">02</div>
+        <div class="role-ico c2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="role-title">The Adult Child</div>
+        <div class="role-zh">子女 · 家屬</div>
+        <div class="role-desc">Opens their phone to a single, reassuring screen. Big status, plain-language summary. Notified only when something genuinely needs their attention.</div>
+        <div class="role-channel">Mobile app</div>
+      </div>
+      <div class="role-card">
+        <div class="role-num">03</div>
+        <div class="role-ico c3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 8h4M8 12h8"/></svg></div>
+        <div class="role-title">The Social Worker</div>
+        <div class="role-zh">社工 · 個案經理</div>
+        <div class="role-desc">Five elders, daily ADL tracking, risk flags, voice biomarker trends, and home visits — one calm dashboard. Built for a quiet morning triage, not alarm fatigue.</div>
+        <div class="role-channel">Web dashboard + tablet</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="protos-section" id="prototypes">
+  <div class="protos-inner">
+    <div class="section-label">Click through</div>
+    <div class="protos-h2">The prototypes.</div>
+    <p class="protos-p">Interactive, hi-fi, bilingual. Start with the social worker dashboard — it's the core of the product.</p>
+    <div class="protos">
+      <a class="proto wide" href="Social Worker Dashboard.html">
+        <div class="proto-body">
+          <span class="proto-tag t1">Primary · staff-facing</span>
+          <div class="proto-title">Social Worker Dashboard</div>
+          <p class="proto-desc">Caseload of five discharged elders. Daily ADL tracking, readmission-risk triage, alerts, voice biomarker trends inline per elder, and a deep-dive drawer. EN / 中文.</p>
+          <div class="proto-footer"><span class="proto-link">Open dashboard</span><span class="proto-arrow">→</span></div>
+        </div>
+        <div class="proto-preview">
+          <div class="mock-sw">
+            <div class="mock-sw-side"></div>
+            <div class="mock-sw-body">
+              <div class="mock-sw-bar"></div>
+              <div class="mock-sw-grid">
+                <div class="mock-sw-card"><div class="mock-sw-av" style="background:rgba(46,170,91,0.25)"></div><div class="mock-sw-ln"></div><div class="mock-sw-ln" style="width:60%"></div><div class="mock-sw-st" style="background:#2EAA5B"></div></div>
+                <div class="mock-sw-card"><div class="mock-sw-av" style="background:rgba(255,159,10,0.25)"></div><div class="mock-sw-ln"></div><div class="mock-sw-ln" style="width:70%"></div><div class="mock-sw-st" style="background:#FF9F0A"></div></div>
+                <div class="mock-sw-card"><div class="mock-sw-av" style="background:rgba(255,59,48,0.25)"></div><div class="mock-sw-ln"></div><div class="mock-sw-ln" style="width:50%"></div><div class="mock-sw-st" style="background:#FF3B30"></div></div>
+                <div class="mock-sw-card"><div class="mock-sw-av" style="background:rgba(46,170,91,0.20)"></div><div class="mock-sw-ln"></div><div class="mock-sw-ln" style="width:75%"></div><div class="mock-sw-st" style="background:#2EAA5B"></div></div>
+                <div class="mock-sw-card"><div class="mock-sw-av" style="background:rgba(46,170,91,0.20)"></div><div class="mock-sw-ln"></div><div class="mock-sw-ln" style="width:65%"></div><div class="mock-sw-st" style="background:#2EAA5B"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+      <a class="proto" href="Family App.html">
+        <div class="proto-body">
+          <span class="proto-tag t2">Adult child · mobile</span>
+          <div class="proto-title">Family App</div>
+          <p class="proto-desc">One screen. Big status, plain-language call summary, and nudges only when something matters.</p>
+          <div class="proto-footer"><span class="proto-link">Open family app</span><span class="proto-arrow">→</span></div>
+        </div>
+        <div class="proto-preview">
+          <div class="mock-fam">
+            <div class="mock-fam-phone">
+              <div class="mock-fam-hero"></div>
+              <div class="mock-fam-ln" style="width:90%"></div>
+              <div class="mock-fam-ln" style="width:65%"></div>
+              <div class="mock-fam-ln" style="width:80%"></div>
+              <div class="mock-fam-card"></div>
+            </div>
+          </div>
+        </div>
+      </a>
+      <a class="proto" href="Elder Call.html">
+        <div class="proto-body">
+          <span class="proto-tag t3">Elder · voice only</span>
+          <div class="proto-title">The Daily Call</div>
+          <p class="proto-desc">How the frictionless check-in works — and what it quietly captures in the background.</p>
+          <div class="proto-footer"><span class="proto-link">See the call flow</span><span class="proto-arrow">→</span></div>
+        </div>
+        <div class="proto-preview">
+          <div class="mock-call">
+            <div class="mock-call-ring"><svg viewBox="0 0 24 24" fill="#fff"><path d="M5 4h3l1.5 4-2 1.5a11 11 0 0 0 5 5l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A16 16 0 0 1 3 6.2 2 2 0 0 1 5 4z"/></svg></div>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="closer">
+  <h2>The gap after discharge is where people <span class="g">fall through.</span></h2>
+  <p>CareBridge closes it — with a phone call, a reassuring app, and a dashboard that makes five elders feel like one social worker's full-time focus.</p>
+  <a class="closer-cta" href="Social Worker Dashboard.html">Open the dashboard →</a>
+</div>
+
+<footer>
+  <div class="footer-brand"><span class="footer-mark"></span>CareBridge 康橋</div>
+  <div class="footer-copy">Hong Kong transitional-care pilot · EuroHack 2026</div>
+</footer>
+
 </body>
 </html>

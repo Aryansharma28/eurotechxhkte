@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { getClient, getAdminClient } from '../lib/supabase.js'
+import { getClient, getAdminClient, getUserId } from '../lib/supabase.js'
 
 type Env = { Variables: { token: string } }
 const family = new Hono<Env>()
@@ -10,8 +10,12 @@ family.get('/elder', async (c) => {
   const sb = getClient(token)
   const today = new Date().toISOString().split('T')[0]
 
-  // find family member row for this user
-  const { data: fm, error: fmErr } = await sb.from('family_members').select('*').single()
+  // resolve the authenticated family member by user id (not a bare .single()).
+  // limit(1) keeps it safe even if a user is linked to more than one elder.
+  const userId = await getUserId(token)
+  if (!userId) return c.json({ error: 'Unauthorized' }, 401)
+  const { data: fmRows, error: fmErr } = await sb.from('family_members').select('*').eq('profile_id', userId).limit(1)
+  const fm = fmRows?.[0]
   if (fmErr || !fm) return c.json({ error: 'Family member record not found' }, 403)
 
   const elderId = fm.elder_id
