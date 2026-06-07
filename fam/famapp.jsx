@@ -238,6 +238,22 @@ function FamilyApp() {
             </div>
           </div>
           <div className="fstatus">{statusText}</div>
+          {/* activity completion pill */}
+          {(() => {
+            const doneN = acts.filter(a => a.status === "done").length
+            const total = ACTS_FAM.length
+            const pct = total > 0 ? Math.round((doneN / total) * 100) : 0
+            return (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 14, marginBottom: 4 }}>
+                <div style={{ flex: 1, height: 4, borderRadius: 4, background: "rgba(255,255,255,0.22)", overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${pct}%`, background: "#fff", borderRadius: 4, transition: "width .5s ease" }} />
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.90)", whiteSpace: "nowrap" }}>
+                  {doneN}/{total} {t("done", "完成")}
+                </span>
+              </div>
+            )
+          })()}
           {callTime && <span className="fwhen">{I.phone}{t(`Check-in call done · ${callTime}`, `已完成今早通話 · ${callTime}`)}</span>}
           {!callTime && call?.state === "missed" && <span className="fwhen missed">{I.phoneMissed}{t("Missed today's call", "今日電話未接")}</span>}
         </div>
@@ -275,6 +291,7 @@ function FamilyApp() {
             const rec = acts.find(r => r.activity_key === a.key)
             const state = rec ? (rec.status === "done" ? "done" : "missed") : "pending"
             const last = i === ACTS_FAM.length - 1
+            const note = rec?.notes_en || rec?.notes || null
             return (
               <div key={a.key} className={"fam-row" + (last ? " fam-row-last" : "")}>
                 <div className={"fam-act-icon " + state}>
@@ -283,6 +300,7 @@ function FamilyApp() {
                 </div>
                 <div className="fam-row-body">
                   <div className="fam-row-title">{t(a.en, a.zh)}</div>
+                  {note && <div className="fam-row-sub">{note}</div>}
                 </div>
                 <div className={"fam-row-value " + state}>
                   {state === "done" ? t("Done", "完成") : state === "missed" ? t("Missed", "未完成") : "—"}
