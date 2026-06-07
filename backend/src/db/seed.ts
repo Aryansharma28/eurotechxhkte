@@ -50,7 +50,7 @@ await upsert('profiles', { id: karenUser.id, role: 'worker', name_en: 'Karen Tsa
 const { data: workerRow, error: wErr } = await sb.from('workers')
   .upsert({ profile_id: karenUser.id, name_en: 'Karen Tsang', name_zh: '曾家欣',
             role_en: 'Community geriatric nurse', role_zh: '社區老人科護士',
-            team: 'Kowloon East Transitional Care' }, { onConflict: 'profile_id' })
+            team: 'Kowloon East Transitional Care', phone: '+852 8100 2233' }, { onConflict: 'profile_id' })
   .select('id').single()
 if (wErr) throw wErr
 const workerId = workerRow.id

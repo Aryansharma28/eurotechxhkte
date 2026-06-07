@@ -3,7 +3,7 @@
    Post-discharge eldercare, Hong Kong. Warm, trustworthy, legible.
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Noto+Sans+HK:wght@400;500;700;900&family=Spline+Sans+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+HK:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
   /* ---- Warm neutrals ---- */
@@ -37,18 +37,29 @@
   --calm-bg:   oklch(0.955 0.030 242);
 
   /* ---- Type ---- */
-  --sans: 'Hanken Grotesk', 'Noto Sans HK', system-ui, sans-serif;
-  --hk:   'Noto Sans HK', 'Hanken Grotesk', sans-serif;
-  --mono: 'Spline Sans Mono', ui-monospace, monospace;
+  --sans: 'Inter', 'Noto Sans HK', system-ui, sans-serif;
+  --hk:   'Noto Sans HK', 'Inter', sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
 
-  /* ---- Radius & shadow ---- */
+  /* ---- Radius ---- */
   --r-sm: 8px;
   --r:    14px;
   --r-lg: 20px;
   --r-xl: 28px;
-  --shadow-sm: 0 1px 2px oklch(0.4 0.02 158 / 0.06), 0 1px 3px oklch(0.4 0.02 158 / 0.05);
-  --shadow:    0 2px 6px oklch(0.4 0.02 158 / 0.06), 0 8px 24px oklch(0.4 0.02 158 / 0.07);
-  --shadow-lg: 0 12px 40px oklch(0.35 0.02 158 / 0.13);
+
+  /* ---- Shadows ---- */
+  --shadow-xs: 0 1px 2px oklch(0.4 0.02 158 / 0.04);
+  --shadow-sm: 0 1px 3px oklch(0.4 0.02 158 / 0.05), 0 2px 6px oklch(0.4 0.02 158 / 0.05);
+  --shadow:    0 2px 8px oklch(0.4 0.02 158 / 0.06), 0 8px 28px oklch(0.4 0.02 158 / 0.08);
+  --shadow-lg: 0 16px 48px oklch(0.35 0.02 158 / 0.14);
+  --shadow-green: 0 4px 16px oklch(0.5 0.09 158 / 0.28);
+
+  /* ---- Motion ---- */
+  --dur-fast: 0.10s;
+  --dur:      0.18s;
+  --dur-slow: 0.30s;
+  --ease:     cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-out: cubic-bezier(0.0, 0.0, 0.2, 1);
 }
 
 * { box-sizing: border-box; }
@@ -67,55 +78,117 @@ html, body {
 h1, h2, h3, h4 { margin: 0; font-weight: 700; letter-spacing: -0.012em; line-height: 1.1; }
 p { margin: 0; }
 a { color: inherit; text-decoration: none; }
-button { font-family: inherit; }
+button { font-family: inherit; cursor: pointer; }
 
 .mono { font-family: var(--mono); font-feature-settings: "tnum"; letter-spacing: -0.01em; }
 
-/* ---------- Reusable pieces ---------- */
+/* ---------- Form inputs (shared base) ---------- */
+input[type=email],
+input[type=password],
+input[type=text],
+textarea {
+  font-family: var(--sans);
+  color: var(--ink);
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: var(--r);
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  outline: none;
+}
+input[type=email]:focus,
+input[type=password]:focus,
+input[type=text]:focus,
+textarea:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px oklch(0.56 0.108 158 / 0.12);
+}
+
+/* ---------- Card ---------- */
 .card {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow-sm);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px oklch(0.4 0.01 158 / 0.04);
 }
 
+/* ---------- Pill ---------- */
 .pill {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 4px 11px; border-radius: 999px;
-  font-size: 12.5px; font-weight: 600; letter-spacing: 0.01em;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.01em;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+.pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
+
+.pill.stable { color: var(--green-ink); background: var(--stable-bg); border-color: oklch(0.88 0.06 158); }
+.pill.watch  { color: var(--watch-ink); background: var(--watch-bg);  border-color: oklch(0.88 0.07 72); }
+.pill.risk   { color: var(--risk-ink);  background: var(--risk-bg);   border-color: oklch(0.88 0.06 27); }
+.pill.calm   { color: var(--calm);      background: var(--calm-bg);   border-color: oklch(0.87 0.05 242); }
+.pill.ghost  { color: var(--ink-soft);  background: var(--bg-sink);   border-color: var(--line); }
+
+/* ---------- Button ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  border: 1px solid transparent; border-radius: 999px;
+  font-weight: 600; font-size: 14px;
+  padding: 10px 20px;
+  transition: transform var(--dur-fast), background var(--dur), box-shadow var(--dur);
   white-space: nowrap;
 }
-.pill .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-
-.pill.stable { color: var(--green-ink); background: var(--stable-bg); }
-.pill.watch  { color: var(--watch-ink); background: var(--watch-bg); }
-.pill.risk   { color: var(--risk-ink);  background: var(--risk-bg); }
-.pill.calm   { color: var(--calm);      background: var(--calm-bg); }
-.pill.ghost  { color: var(--ink-soft);  background: var(--bg-sink); }
-
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  border: 1px solid transparent; border-radius: 999px;
-  font-weight: 600; font-size: 15px; cursor: pointer;
-  padding: 11px 20px; transition: transform .08s ease, background .15s ease, box-shadow .15s ease;
-}
 .btn:active { transform: translateY(1px); }
-.btn.primary { background: var(--green); color: #fff; box-shadow: 0 1px 2px oklch(0.4 0.05 158 / .25); }
-.btn.primary:hover { background: var(--green-deep); }
-.btn.ghost { background: var(--surface); border-color: var(--line); color: var(--ink); }
-.btn.ghost:hover { background: var(--surface-2); }
+.btn:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
 
-/* avatar placeholder */
+.btn.primary {
+  background: var(--green); color: #fff;
+  box-shadow: 0 1px 3px oklch(0.4 0.05 158 / .20), 0 2px 6px oklch(0.4 0.05 158 / .15);
+}
+.btn.primary:hover { background: var(--green-deep); box-shadow: var(--shadow-green); }
+.btn.ghost  { background: var(--surface); border-color: var(--line); color: var(--ink); }
+.btn.ghost:hover { background: var(--surface-2); border-color: oklch(0.88 0.01 152); }
+.btn.danger { background: var(--risk-bg); border-color: oklch(0.88 0.06 27); color: var(--risk-ink); }
+.btn.danger:hover { background: oklch(0.94 0.04 27); }
+
+/* ---------- Icon button ---------- */
+.iconbtn {
+  width: 36px; height: 36px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--surface);
+  display: grid; place-items: center; cursor: pointer;
+  color: var(--ink-soft);
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+.iconbtn:hover { background: var(--surface-2); color: var(--ink); }
+.iconbtn:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+
+/* ---------- Avatar ---------- */
 .avatar {
   border-radius: 50%; display: grid; place-items: center;
   font-weight: 700; color: var(--green-ink);
   background:
     repeating-linear-gradient(135deg, oklch(0.92 0.04 158) 0 7px, oklch(0.95 0.03 158) 7px 14px);
-  border: 1px solid var(--line);
+  border: 1.5px solid oklch(0.9 0.04 158);
   overflow: hidden; flex: none;
 }
 
-/* striped image placeholder */
+/* ---------- Skeleton / loading ---------- */
+@keyframes shimmer {
+  from { background-position: -400px 0; }
+  to   { background-position:  400px 0; }
+}
+
+.skeleton {
+  border-radius: var(--r);
+  background: linear-gradient(
+    90deg,
+    var(--bg-sink) 0%,
+    oklch(0.972 0.005 150) 40%,
+    var(--bg-sink) 100%
+  );
+  background-size: 400px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+/* ---------- Striped image placeholder ---------- */
 .imgslot {
   background:
     repeating-linear-gradient(135deg, var(--bg-sink) 0 11px, var(--surface-2) 11px 22px);
@@ -125,8 +198,19 @@ button { font-family: inherit; }
   color: var(--ink-faint); font-family: var(--mono); font-size: 12px;
 }
 
-.scrim { background: oklch(0.3 0.02 158 / 0.34); }
+/* ---------- Overlay scrim ---------- */
+.scrim { background: oklch(0.3 0.02 158 / 0.38); backdrop-filter: blur(2px); }
 
-::-webkit-scrollbar { width: 11px; height: 11px; }
-::-webkit-scrollbar-thumb { background: oklch(0.85 0.01 158); border-radius: 99px; border: 3px solid var(--bg); }
-::-webkit-scrollbar-thumb:hover { background: oklch(0.78 0.01 158); }
+/* ---------- Section header ---------- */
+.sec-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+}
+.sec-header h2 { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+.sec-header .sub { font-size: 12.5px; color: var(--ink-faint); }
+
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: oklch(0.87 0.01 158); border-radius: 99px; border: 3px solid var(--bg); }
+::-webkit-scrollbar-thumb:hover { background: oklch(0.80 0.01 158); }

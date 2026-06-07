@@ -35,6 +35,7 @@ const I = {
   cal:    <Icon d={<><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></>} />,
   trend:  <Icon d={<path d="M3 17l6-6 4 4 8-8"/>} />,
   spark:  <Icon d={<path d="M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z"/>} />,
+  wave:   <Icon d={<path d="M2 12h3l2-4 2 8 2-5 2 3 2-2h7"/>} />,
 };
 
 /* status helpers */

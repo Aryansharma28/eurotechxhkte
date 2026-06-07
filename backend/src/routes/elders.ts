@@ -4,6 +4,9 @@ import { getClient } from '../lib/supabase.js'
 type Env = { Variables: { token: string } }
 const elders = new Hono<Env>()
 
+const daysSince = (dischargeDate: string | null): number | null =>
+  dischargeDate ? Math.floor((Date.now() - new Date(dischargeDate).getTime()) / 86_400_000) : null
+
 // GET /api/elders — worker's caseload with today's activities, call state, open flags
 elders.get('/', async (c) => {
   const token = c.get('token') as string
@@ -29,7 +32,7 @@ elders.get('/', async (c) => {
     const todayActs = (acts || []).filter((a: any) => a.elder_id === e.id)
     const call      = (calls || []).find((c: any) => c.elder_id === e.id) ?? null
     const flags     = (openFlags || []).filter((f: any) => f.elder_id === e.id)
-    return { ...e, today_activities: todayActs, latest_call: call, open_flags: flags }
+    return { ...e, day_since_discharge: daysSince(e.discharge_date), today_activities: todayActs, latest_call: call, open_flags: flags }
   })
 
   return c.json(result)
@@ -57,7 +60,7 @@ elders.get('/:id', async (c) => {
   ])
 
   if (!elder) return c.json({ error: 'Not found' }, 404)
-  return c.json({ ...elder, activities: acts, vitals, open_flags: flags, care_plan: plan, recent_calls: calls, family })
+  return c.json({ ...elder, day_since_discharge: daysSince(elder.discharge_date), activities: acts, vitals, open_flags: flags, care_plan: plan, recent_calls: calls, family })
 })
 
 // PATCH /api/elders/:id/risk — override risk tier
