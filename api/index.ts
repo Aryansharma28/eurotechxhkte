@@ -77,6 +77,39 @@ app.get('/elders', async (c) => {
   })))
 })
 
+// ── /api/elders/:id (detail drawer) ────────────────────────────────────────────
+
+app.get('/elders/:id', async (c) => {
+  const token = c.get('token')
+  const sb = getClient(token)
+  const id = c.req.param('id')
+
+  const { data: elder, error } = await sb.from('elders').select('*').eq('id', id).single()
+  if (error || !elder) return c.json({ error: error?.message || 'Elder not found' }, 404)
+
+  const weekAgo = new Date(Date.now() - 7 * 86_400_000).toISOString().split('T')[0]
+
+  const [{ data: activities }, { data: vitals }, { data: recent_calls }, { data: care_plan }, { data: family }] =
+    await Promise.all([
+      sb.from('activity_records').select('*').eq('elder_id', id).gte('record_date', weekAgo).order('record_date'),
+      sb.from('vitals').select('*').eq('elder_id', id).order('measured_at', { ascending: false }),
+      sb.from('daily_calls').select('scheduled_at,state,summary_en,summary_zh').eq('elder_id', id)
+        .order('scheduled_at', { ascending: false }).limit(7),
+      sb.from('care_plan_items').select('*').eq('elder_id', id),
+      sb.from('family_members').select('name_en,name_zh,phone,relationship_en').eq('elder_id', id),
+    ])
+
+  return c.json({
+    ...elder,
+    day_since_discharge: daysSince(elder.discharge_date),
+    activities: activities || [],
+    vitals: vitals || [],
+    recent_calls: recent_calls || [],
+    care_plan: care_plan || [],
+    family: family || [],
+  })
+})
+
 // ── /api/visits ───────────────────────────────────────────────────────────────
 
 app.get('/visits', async (c) => {
