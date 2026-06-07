@@ -79,6 +79,12 @@ function ElderDetail({ id, lang, onClose, onVisit, onReload }) {
       .then(d => setDetail(d))
       .catch(e => setErr(e.message))
       .finally(() => setLoading(false))
+
+    // Re-fetch silently every 5s so biomarker charts update live after a call
+    const poll = setInterval(() => {
+      API.get(`/api/elders/${id}`).then(d => setDetail(d)).catch(() => {})
+    }, 5000)
+    return () => clearInterval(poll)
   }, [id])
 
   if (loading) return (
@@ -156,61 +162,65 @@ function ElderDetail({ id, lang, onClose, onVisit, onReload }) {
             </div>
           </div>
 
-          {/* ── Voice biomarkers ── */}
-          {(typeof BIOMARKERS !== 'undefined') && BIOMARKERS[e.id] && (() => {
-            const bm = BIOMARKERS[e.id]
-            const thresholds = (typeof NEURO_THRESHOLDS !== 'undefined') ? NEURO_THRESHOLDS : {}
-            const keys = (typeof BIOMARKER_KEYS !== 'undefined') ? BIOMARKER_KEYS : Object.keys(thresholds)
+          {/* ── Live voice biomarkers (from real calls) ── */}
+          {(() => {
+            const callsWithVoice = (e.recent_calls || [])
+              .filter(c => c.parkinson_signal != null || c.neurological_decline_signal != null)
+              .reverse() // oldest-first so sparkline reads left→right in time
+
+            if (callsWithVoice.length < 1) return null
+
+            const parkVals  = callsWithVoice.map(c => c.parkinson_signal).filter(v => v != null)
+            const neuroVals = callsWithVoice.map(c => c.neurological_decline_signal).filter(v => v != null)
+            const parkLatest  = parkVals[parkVals.length - 1]
+            const neuroLatest = neuroVals[neuroVals.length - 1]
+            const parkLevel  = parkLatest  >= 55 ? 'risk' : parkLatest  >= 30 ? 'watch' : 'ok'
+            const neuroLevel = neuroLatest >= 55 ? 'risk' : neuroLatest >= 30 ? 'watch' : 'ok'
+            const overallLevel = (parkLevel === 'risk' || neuroLevel === 'risk') ? 'risk'
+              : (parkLevel === 'watch' || neuroLevel === 'watch') ? 'watch' : 'ok'
+
+            const numColor = lv => lv === 'risk' ? 'var(--risk-ink)' : lv === 'watch' ? 'var(--watch-ink)' : 'var(--ink)'
+
             return (
               <div className="dcard card">
-                <h3>{I.wave} {L(lang, 'Voice biomarkers', '語音生物標誌')}</h3>
-                {bm.alertLevel && (
-                  <div className={'riskbanner ' + bm.alertLevel} style={{ marginBottom: 14 }}>
-                    <div className="aic" style={{ color: bm.alertLevel === 'risk' ? 'var(--risk-ink)' : 'var(--watch-ink)' }}>{I.alert}</div>
-                    <div>
-                      <div className="rt">{bm.alertLevel === 'risk' ? L(lang, 'Notable voice change — consider review', '語音出現顯著變化 — 考慮複診') : L(lang, 'Voice pattern shift — monitor closely', '語音模式有輕微偏移 — 密切跟進')}</div>
-                    </div>
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {I.wave} {L(lang, 'Voice biomarkers', '語音生物標誌')}
+                  <span style={{ fontSize: 10, color: 'var(--stable)', fontWeight: 600, background: 'var(--stable-bg)', borderRadius: 6, padding: '2px 7px' }}>LIVE</span>
+                </h3>
+                {overallLevel !== 'ok' && (
+                  <div className={'riskbanner ' + overallLevel} style={{ marginBottom: 14 }}>
+                    <div className="aic" style={{ color: numColor(overallLevel) }}>{I.alert}</div>
+                    <div><div className="rt">{overallLevel === 'risk' ? L(lang, 'Notable voice change — consider review', '語音出現顯著變化 — 考慮複診') : L(lang, 'Voice pattern shift — monitor closely', '語音模式有輕微偏移 — 密切跟進')}</div></div>
                   </div>
                 )}
-                <div style={{ display: 'flex', gap: 12, justifyContent: 'space-between', flexWrap: 'wrap' }}>
-                  {keys.map(k => {
-                    const t = thresholds[k]
-                    if (!t) return null
-                    const values = bm.week.map(d => d[k])
-                    const level  = bm.metricAlerts[k]
-                    const today  = bm.today[k]
-                    const base   = bm.baseline[k]
-                    const delta  = today - base
-                    const pct    = Math.abs(delta / (base || 1) * 100).toFixed(0)
-                    const worse  = t.higherBetter ? delta < 0 : delta > 0
-                    const numColor = level === 'risk' ? 'var(--risk-ink)' : level === 'watch' ? 'var(--watch-ink)' : 'var(--ink)'
-                    return (
-                      <div key={k} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, minWidth: 58 }}>
-                        <div style={{ fontSize: 10, color: 'var(--ink-faint)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>
-                          {L(lang, t.label_en, t.label_zh)}
-                        </div>
-                        <DrawerSparkline values={values} level={level} />
-                        <span style={{ fontSize: 15, fontWeight: 800, fontFamily: 'var(--mono)', color: numColor, lineHeight: 1 }}>
-                          {k === 'pauses' ? today.toFixed(2) : String(today)}
-                          <span style={{ fontSize: 9, fontWeight: 400, color: 'var(--ink-faint)', marginLeft: 2 }}>{t.unit}</span>
-                        </span>
-                        {+pct > 2
-                          ? <span style={{ fontSize: 10, fontWeight: 600, color: level === 'ok' ? 'var(--ink-faint)' : numColor, fontFamily: 'var(--mono)' }}>
-                              {worse ? '↓' : '↑'} {pct}%
-                            </span>
-                          : <span style={{ fontSize: 10, color: 'var(--ink-faint)' }}>stable</span>
-                        }
-                        {level !== 'ok' && (
-                          <span className={'pill ' + level} style={{ fontSize: 9, padding: '1px 6px' }}>
-                            <span className="dot" />{level}
-                          </span>
-                        )}
+                <div style={{ display: 'flex', gap: 16 }}>
+                  {parkVals.length >= 1 && (
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      <div style={{ fontSize: 10, color: 'var(--ink-faint)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        {L(lang, 'Parkinson signal', '柏金遜信號')}
                       </div>
-                    )
-                  })}
+                      <DrawerSparkline values={parkVals} level={parkLevel} width={110} height={34} />
+                      <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--mono)', color: numColor(parkLevel), lineHeight: 1 }}>
+                        {parkLatest}<span style={{ fontSize: 10, color: 'var(--ink-faint)', marginLeft: 2 }}>/100</span>
+                      </div>
+                      {parkLevel !== 'ok' && <span className={'pill ' + parkLevel} style={{ fontSize: 9, padding: '1px 6px', alignSelf: 'flex-start' }}><span className="dot"/>{parkLevel}</span>}
+                    </div>
+                  )}
+                  {neuroVals.length >= 1 && (
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      <div style={{ fontSize: 10, color: 'var(--ink-faint)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        {L(lang, 'Neuro decline', '神經退化')}
+                      </div>
+                      <DrawerSparkline values={neuroVals} level={neuroLevel} width={110} height={34} />
+                      <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--mono)', color: numColor(neuroLevel), lineHeight: 1 }}>
+                        {neuroLatest}<span style={{ fontSize: 10, color: 'var(--ink-faint)', marginLeft: 2 }}>/100</span>
+                      </div>
+                      {neuroLevel !== 'ok' && <span className={'pill ' + neuroLevel} style={{ fontSize: 9, padding: '1px 6px', alignSelf: 'flex-start' }}><span className="dot"/>{neuroLevel}</span>}
+                    </div>
+                  )}
                 </div>
-                <div style={{ marginTop: 12, paddingTop: 10, borderTop: '0.5px solid var(--line)', fontSize: 11, color: 'var(--ink-faint)', fontFamily: 'var(--mono)' }}>
-                  {L(lang, 'Illustrative sample data — not yet from live calls. (Pause ratio is now measured per real call.)', '示例數據 — 暫未來自實時通話。（每次真實通話現已量度停頓比率。）')}
+                <div style={{ marginTop: 10, paddingTop: 10, borderTop: '0.5px solid var(--line)', fontSize: 11, color: 'var(--ink-faint)', fontFamily: 'var(--mono)' }}>
+                  {L(lang, `${callsWithVoice.length} call${callsWithVoice.length !== 1 ? 's' : ''} · refreshes every 5 s`, `${callsWithVoice.length} 通通話 · 每 5 秒更新`)}
                 </div>
               </div>
             )

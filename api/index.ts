@@ -93,8 +93,9 @@ app.get('/elders/:id', async (c) => {
     await Promise.all([
       sb.from('activity_records').select('*').eq('elder_id', id).gte('record_date', weekAgo).order('record_date'),
       sb.from('vitals').select('*').eq('elder_id', id).order('measured_at', { ascending: false }),
-      sb.from('daily_calls').select('scheduled_at,state,summary_en,summary_zh').eq('elder_id', id)
-        .order('scheduled_at', { ascending: false }).limit(7),
+      sb.from('daily_calls')
+        .select('scheduled_at,state,summary_en,summary_zh,pause_ratio,speech_ms,parkinson_signal,neurological_decline_signal,rate,pitch,tremor,fluency')
+        .eq('elder_id', id).order('scheduled_at', { ascending: false }).limit(14),
       sb.from('care_plan_items').select('*').eq('elder_id', id),
       sb.from('family_members').select('name_en,name_zh,phone,relationship_en').eq('elder_id', id),
     ])
