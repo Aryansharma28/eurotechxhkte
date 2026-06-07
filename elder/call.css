@@ -74,8 +74,8 @@
 
 /* capture panel */
 .cap { width: 380px; background: oklch(0.22 0.014 158); border: 1px solid oklch(0.34 0.015 158); border-radius: 24px; padding: 22px; }
-.cap h3 { font-size: 14px; display: flex; align-items: center; gap: 9px; }
-.cap h3 .zh { color: oklch(0.74 0.02 158); font-weight: 600; font-size: 13px; font-family: var(--hk); }
+.cap h3 { font-size: 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 9px; }
+.cap h3 .zh { color: oklch(0.74 0.02 158); font-weight: 600; font-size: 13px; font-family: var(--hk); white-space: nowrap; }
 .cap .capsub { color: oklch(0.72 0.02 158); font-size: 13px; margin: 6px 0 18px; line-height: 1.45; }
 .caprow { display: flex; align-items: center; gap: 13px; padding: 12px 0; border-bottom: 1px solid oklch(0.30 0.01 158); transition: opacity .35s, background .35s; }
 .caprow.pending { opacity: 0.30; }
