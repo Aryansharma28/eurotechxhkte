@@ -88,19 +88,26 @@ function FamilyApp() {
       }
     });
   }, []);
-  async function loadData() {
-    setLoading(true);
-    setErr(null);
+  async function loadData(silent) {
+    if (!silent) {
+      setLoading(true);
+      setErr(null);
+    }
     try {
       const d = await API.get("/api/family/elder");
       setData(d);
     } catch (e) {
-      setErr(e.message);
+      if (!silent) setErr(e.message);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
       setChecking(false);
     }
   }
+  React.useEffect(() => {
+    if (!authed) return;
+    const id = setInterval(() => loadData(true), 5e3);
+    return () => clearInterval(id);
+  }, [authed]);
   function handleLogin() {
     setAuthed(true);
     loadData();

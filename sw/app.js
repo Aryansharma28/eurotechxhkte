@@ -61,8 +61,8 @@ function Dashboard() {
       } else setChecking(false);
     });
   }, []);
-  async function loadData() {
-    setLoading(true);
+  async function loadData(silent) {
+    if (!silent) setLoading(true);
     try {
       const [elderData, visitData, flagData] = await Promise.all([
         API.get("/api/elders"),
@@ -75,10 +75,15 @@ function Dashboard() {
     } catch (e) {
       console.error("loadData:", e);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
       setChecking(false);
     }
   }
+  React.useEffect(() => {
+    if (!authed) return;
+    const id = setInterval(() => loadData(true), 5e3);
+    return () => clearInterval(id);
+  }, [authed]);
   function handleLogin() {
     setAuthed(true);
     loadData();
