@@ -66,6 +66,12 @@ function ElderCard({ e, lang, onOpen }) {
   const neuBm  = (typeof BIOMARKERS !== 'undefined') ? BIOMARKERS[e.id] : null
   const neuLvl = neuBm?.alertLevel   // 'risk' | 'watch' | undefined
 
+  const todayVals  = ACTS.map((_, i) => vm.week[i][6])
+  const doneCount  = todayVals.filter(v => v === 1).length
+  const totalActs  = ACTS.length
+  const allDone    = doneCount === totalActs
+  const nonePending = todayVals.every(v => v !== -1)
+
   return (
     <div className="ecard card" onClick={() => onOpen(e.id)}>
       <div className="ehead">
@@ -74,6 +80,20 @@ function ElderCard({ e, lang, onOpen }) {
           <div className="enm">{L(lang, vm.name, vm.zh)}</div>
           <div className="ezh">{L(lang, vm.zh, vm.name)} · {vm.age}{L(lang, '', '歲')}</div>
           <div className="emeta">{L(lang, `Day ${vm.day} · ${vm.dx}`, `出院第 ${vm.day} 天 · ${vm.dxZh}`)}</div>
+        </div>
+        {/* completion ring */}
+        <div className={'ecompl' + (allDone ? ' all' : '')} title={`${doneCount}/${totalActs} today`}>
+          <svg width="34" height="34" viewBox="0 0 34 34">
+            <circle cx="17" cy="17" r="14" fill="none" stroke="#E5E5EA" strokeWidth="3" />
+            <circle cx="17" cy="17" r="14" fill="none"
+              stroke={allDone ? 'var(--green)' : r.cls === 'risk' ? 'var(--risk)' : r.cls === 'watch' ? 'var(--watch)' : 'var(--green)'}
+              strokeWidth="3" strokeLinecap="round"
+              strokeDasharray={`${(doneCount / totalActs) * 87.96} 87.96`}
+              strokeDashoffset="22"
+              style={{ transition: 'stroke-dasharray .5s ease' }}
+            />
+          </svg>
+          <span className="ecompl-n">{doneCount}</span>
         </div>
       </div>
 

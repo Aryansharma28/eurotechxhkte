@@ -84,6 +84,32 @@ function ElderCall() {
                 <div className="cbtnwrap"><button className="cbtn accept" onClick={accept}>{I.phone}</button>{t("Answer", "接聽")}</div>
               </div>
             </div>
+          ) : synced ? (
+            <div className="cdone">
+              <div className="cdone-check">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              </div>
+              <div className="cdone-title">{t("Call complete", "通話完成")}</div>
+              <div className="cdone-sub">{t("2 min 3 sec · synced to dashboard", "2分3秒 · 已同步至儀表板")}</div>
+              <div className="cdone-items">
+                {[
+                  { ic: "pill",  en: "Medication taken",   zh: "已服藥",   ok: true  },
+                  { ic: "meal",  en: "Had breakfast",       zh: "已進食",   ok: true  },
+                  { ic: "walk",  en: "Light mobility",      zh: "有輕微活動", ok: true  },
+                  { ic: "sleep", en: "Slept well",          zh: "睡眠良好", ok: true  },
+                  { ic: "alert", en: "Dizziness flagged",   zh: "頭暈已提示", ok: false },
+                ].map(item => (
+                  <div key={item.ic} className={"cdone-row " + (item.ok ? "ok" : "flag")}>
+                    <div className="cdone-ic">{I[item.ic]}</div>
+                    <span>{t(item.en, item.zh)}</span>
+                    <div className="cdone-st">{item.ok ? I.check : I.alert}</div>
+                  </div>
+                ))}
+              </div>
+              <button className="cdone-replay" onClick={() => { setPhase("incoming"); setStep(-1); setPlaying(false); }}>
+                {t("Replay", "重播")}
+              </button>
+            </div>
           ) : (
             <div className="cincall">
               <div className="ctop">

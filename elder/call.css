@@ -75,8 +75,10 @@
 .cap h3 { font-size: 14px; display: flex; align-items: center; gap: 9px; }
 .cap h3 .zh { color: oklch(0.74 0.02 158); font-weight: 600; font-size: 13px; font-family: var(--hk); }
 .cap .capsub { color: oklch(0.72 0.02 158); font-size: 13px; margin: 6px 0 18px; line-height: 1.45; }
-.caprow { display: flex; align-items: center; gap: 13px; padding: 12px 0; border-bottom: 1px solid oklch(0.30 0.01 158); transition: opacity .4s; }
-.caprow.pending { opacity: 0.32; }
+.caprow { display: flex; align-items: center; gap: 13px; padding: 12px 0; border-bottom: 1px solid oklch(0.30 0.01 158); transition: opacity .35s, background .35s; }
+.caprow.pending { opacity: 0.30; }
+.caprow.on, .caprow.flag { animation: capin .4s ease; }
+@keyframes capin { from { opacity: 0.3; transform: translateX(-4px); } to { opacity: 1; transform: none; } }
 .caprow .capi { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; flex: none;
   background: oklch(0.30 0.02 158); color: oklch(0.7 0.03 158); transition: all .4s; }
 .caprow.on .capi { background: var(--stable-bg); color: var(--green-ink); }
@@ -100,3 +102,27 @@
 .clang { position: absolute; top: 26px; right: 26px; display: flex; background: oklch(1 0 0 / 0.08); border: 1px solid oklch(1 0 0 / 0.14); border-radius: 999px; padding: 3px; z-index: 10; }
 .clang button { border: none; background: none; padding: 6px 13px; border-radius: 999px; font-weight: 700; font-size: 13px; color: oklch(0.78 0.02 158); cursor: pointer; }
 .clang button.on { background: var(--green); color: #fff; }
+
+/* call done screen */
+.cdone { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 56px 20px 28px;
+  background: radial-gradient(120% 50% at 50% 0%, oklch(0.30 0.07 158) 0%, oklch(0.16 0.012 158) 55%); }
+.cdone-check { width: 64px; height: 64px; border-radius: 50%; background: var(--green); display: grid; place-items: center;
+  box-shadow: 0 0 0 12px oklch(0.56 0.108 158 / 0.18); animation: cdcheck .5s ease; }
+.cdone-check svg { width: 28px; height: 28px; }
+@keyframes cdcheck { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.cdone-title { font-size: 22px; font-weight: 800; margin: 18px 0 4px; letter-spacing: -0.02em; }
+.cdone-sub { font-size: 12.5px; color: oklch(0.72 0.02 158); margin-bottom: 22px; text-align: center; }
+.cdone-items { width: 100%; display: flex; flex-direction: column; gap: 2px; }
+.cdone-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; }
+.cdone-row.ok   { background: oklch(0.22 0.03 158); color: oklch(0.90 0.05 158); }
+.cdone-row.flag { background: oklch(0.22 0.04 80); color: oklch(0.88 0.10 80); }
+.cdone-ic { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; flex: none; }
+.cdone-row.ok .cdone-ic   { background: var(--stable-bg); color: var(--green-ink); }
+.cdone-row.flag .cdone-ic { background: var(--watch-bg); color: var(--watch-ink); }
+.cdone-row .cdone-ic svg { width: 14px; height: 14px; }
+.cdone-row .cdone-st { margin-left: auto; display: flex; }
+.cdone-row .cdone-st svg { width: 15px; height: 15px; }
+.cdone-row.ok .cdone-st   { color: var(--green); }
+.cdone-row.flag .cdone-st { color: var(--watch); }
+.cdone-replay { margin-top: auto; padding-top: 20px; font-size: 14px; font-weight: 600; color: oklch(0.72 0.06 158);
+  background: none; border: none; cursor: pointer; }
