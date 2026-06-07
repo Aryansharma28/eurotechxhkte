@@ -222,8 +222,8 @@ app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
   console.log(`For Twilio, set your webhook URL to: http://<your-ngrok-url>/incoming-call`);
 
-  // Start the scheduler
-  startScheduler();
+  // Start the scheduler (disabled for now)
+  // startScheduler();
 });
 
 async function triggerCall() {
