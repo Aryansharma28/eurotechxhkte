@@ -1,0 +1,9 @@
+node_modules
+dist
+src
+backend
+voice-wt
+*.ts
+tsconfig.json
+package-lock.json
+server.js
