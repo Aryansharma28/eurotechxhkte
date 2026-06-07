@@ -21,40 +21,52 @@ function LoginScreen({ onLogin }) {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: 'var(--bg)', padding: '24px' }}>
-      <form onSubmit={submit} className="card" style={{ width: '100%', maxWidth: 400, padding: '40px 36px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 30 }}>
-          <span style={{ width: 34, height: 34, borderRadius: 10, background: 'var(--green)', display: 'grid', placeItems: 'center', flexShrink: 0, boxShadow: '0 2px 8px oklch(0.5 0.09 158 / .28)' }}>
+    <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#F2F2F7', padding: '24px' }}>
+      <div style={{ width: '100%', maxWidth: 400 }}>
+        {/* logo + wordmark */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 40 }}>
+          <span style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--green)', display: 'grid', placeItems: 'center', flexShrink: 0, boxShadow: '0 3px 10px rgba(46,170,91,0.35)' }}>
             <span style={{ width: 15, height: 15, border: '2.6px solid #fff', borderRadius: '50% 50% 50% 2px', transform: 'rotate(45deg)', display: 'block' }}></span>
           </span>
-          <span style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em' }}>CareBridge <span style={{ fontWeight: 600, color: 'var(--ink-soft)', fontSize: 14, fontFamily: 'var(--hk)' }}>康橋</span></span>
+          <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: '-0.03em' }}>
+            CareBridge{' '}
+            <span style={{ fontWeight: 500, color: 'var(--ink-soft)', fontSize: 14, fontFamily: 'var(--hk)' }}>康橋</span>
+          </span>
         </div>
 
-        <h2 style={{ fontSize: 22, marginBottom: 4, letterSpacing: '-0.02em' }}>Staff sign in</h2>
-        <p style={{ color: 'var(--ink-soft)', fontSize: 14, marginBottom: 28 }}>Social worker · Community nurse</p>
+        <h2 style={{ fontSize: 28, marginBottom: 6, letterSpacing: '-0.03em' }}>Staff sign in</h2>
+        <p style={{ color: 'var(--ink-soft)', fontSize: 15, marginBottom: 32, lineHeight: 1.5 }}>Social worker · Community nurse</p>
 
-        <div style={{ marginBottom: 16 }}>
-          <label style={{ display: 'block', fontSize: 12.5, fontWeight: 600, marginBottom: 6, color: 'var(--ink)', letterSpacing: '0.01em' }}>Email</label>
-          <input value={email} onChange={e => setEmail(e.target.value)} type="email" required placeholder="you@carebridge.hk"
-            style={{ width: '100%', padding: '11px 14px', fontSize: 14.5, boxSizing: 'border-box' }} />
-        </div>
+        {/* iOS grouped fields */}
+        <form onSubmit={submit}>
+          <div style={{ background: '#fff', borderRadius: 12, overflow: 'hidden', marginBottom: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+            <div style={{ padding: '12px 16px', borderBottom: '0.5px solid rgba(60,60,67,0.18)' }}>
+              <div style={{ fontSize: 11.5, color: 'var(--ink-soft)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 500 }}>Email</div>
+              <input value={email} onChange={e => setEmail(e.target.value)} type="email" required placeholder="you@carebridge.hk"
+                style={{ width: '100%', padding: 0, fontSize: 16, background: 'none', border: 'none', outline: 'none', borderRadius: 0 }} />
+            </div>
+            <div style={{ padding: '12px 16px' }}>
+              <div style={{ fontSize: 11.5, color: 'var(--ink-soft)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 500 }}>Password</div>
+              <input value={pass} onChange={e => setPass(e.target.value)} type="password" required placeholder="••••••••"
+                style={{ width: '100%', padding: 0, fontSize: 16, background: 'none', border: 'none', outline: 'none', borderRadius: 0 }} />
+            </div>
+          </div>
 
-        <div style={{ marginBottom: 24 }}>
-          <label style={{ display: 'block', fontSize: 12.5, fontWeight: 600, marginBottom: 6, color: 'var(--ink)', letterSpacing: '0.01em' }}>Password</label>
-          <input value={pass} onChange={e => setPass(e.target.value)} type="password" required placeholder="••••••••"
-            style={{ width: '100%', padding: '11px 14px', fontSize: 14.5, boxSizing: 'border-box' }} />
-        </div>
+          {err && (
+            <div style={{ color: 'var(--risk-ink)', fontSize: 14, marginBottom: 16, padding: '12px 14px', background: 'var(--risk-bg)', borderRadius: 10 }}>
+              {err}
+            </div>
+          )}
 
-        {err && <p style={{ color: 'var(--risk)', fontSize: 13, marginBottom: 14, padding: '10px 12px', background: 'var(--risk-bg)', borderRadius: 10 }}>{err}</p>}
+          <button type="submit" className="btn primary" style={{ width: '100%', padding: '15px', fontSize: 17, borderRadius: 13 }} disabled={loading}>
+            {loading ? 'Signing in…' : 'Sign in'}
+          </button>
+        </form>
 
-        <button type="submit" className="btn primary" style={{ width: '100%', padding: '13px', fontSize: 15, borderRadius: 12 }} disabled={loading}>
-          {loading ? 'Signing in…' : 'Sign in →'}
-        </button>
-
-        <p style={{ color: 'var(--ink-faint)', fontSize: 11.5, marginTop: 22, textAlign: 'center', fontFamily: 'var(--mono)', lineHeight: 1.6 }}>
+        <p style={{ color: 'var(--ink-faint)', fontSize: 12, marginTop: 28, textAlign: 'center', fontFamily: 'var(--mono)', lineHeight: 1.7 }}>
           Demo: karen@carebridge.hk · hackathon123
         </p>
-      </form>
+      </div>
     </div>
   )
 }
@@ -78,15 +90,13 @@ function Dashboard() {
   const [openId, setOpenId]   = React.useState(null)
   const [visitId, setVisitId] = React.useState(null)
 
-  // auth + data state
   const [authed, setAuthed]     = React.useState(false)
-  const [checking, setChecking] = React.useState(true)   // initial session restore
+  const [checking, setChecking] = React.useState(true)
   const [loading, setLoading]   = React.useState(false)
   const [elders, setElders]     = React.useState([])
   const [visits, setVisits]     = React.useState([])
   const [alerts, setAlerts]     = React.useState([])
 
-  // restore session on mount
   React.useEffect(() => {
     API.restoreSession().then(session => {
       if (session) { setAuthed(true); loadData() }
@@ -113,10 +123,7 @@ function Dashboard() {
     }
   }
 
-  function handleLogin() {
-    setAuthed(true)
-    loadData()
-  }
+  function handleLogin() { setAuthed(true); loadData() }
 
   async function handleSignOut() {
     await API.signOut()
@@ -132,9 +139,9 @@ function Dashboard() {
     : 0
 
   const navItems = [
-    { k: 'today',  en: 'Today',  zh: '今日',   ic: I.home },
+    { k: 'today',  en: 'Today',  zh: '今日',    ic: I.home },
     { k: 'neuro',  en: 'Neuro',  zh: '神經趨勢', ic: I.wave, badge: neuroAlertCount || null },
-    { k: 'alerts', en: 'Alerts', zh: '提示',   ic: I.bell, badge: alerts.length || null },
+    { k: 'alerts', en: 'Alerts', zh: '提示',    ic: I.bell, badge: alerts.length || null },
   ]
 
   const today = new Date()
@@ -143,16 +150,19 @@ function Dashboard() {
     today.toLocaleDateString('zh-HK', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))
 
   const titles = {
-    today:  [L(lang, 'Good morning, Karen 早晨', '早晨，家欣'), ''],
-    neuro:  [L(lang, 'Neurological Trends', '神經語音趨勢'), ''],
-    alerts: [L(lang, 'Alerts', '提示'), ''],
+    today:  L(lang, 'Good morning, Karen', '早晨，家欣'),
+    neuro:  L(lang, 'Neurological Trends', '神經語音趨勢'),
+    alerts: L(lang, 'Alerts', '提示'),
   }
 
   return (
     <div className="app">
       {/* sidebar */}
       <aside className="side">
-        <div className="brand"><span className="mark"></span> CareBridge <span className="zh">康橋</span></div>
+        <div className="brand">
+          <span className="mark"></span>
+          CareBridge <span className="zh">康橋</span>
+        </div>
         <div className="navg">
           {navItems.map(n => (
             <button key={n.k} className={'navi ' + (nav === n.k ? 'on' : '')} onClick={() => setNav(n.k)}>
@@ -163,11 +173,11 @@ function Dashboard() {
         </div>
         <div className="spacer"></div>
         <button onClick={handleSignOut} className="btn ghost"
-          style={{ margin: '0 12px 8px', fontSize: 13, padding: '8px 14px' }}>
-          Sign out
+          style={{ margin: '0 8px 8px', fontSize: 14, padding: '9px 16px', justifyContent: 'flex-start' }}>
+          {L(lang, 'Sign out', '登出')}
         </button>
         <div className="workercard">
-          <Avatar name="曾" size={40} />
+          <Avatar name="曾" size={42} />
           <div>
             <div className="wn">{L(lang, 'Karen Tsang', '曾家欣')}</div>
             <div className="wr">{L(lang, 'Community geriatric nurse', '社區老人科護士')}</div>
@@ -179,7 +189,7 @@ function Dashboard() {
       <div className="main">
         <div className="topbar">
           <div>
-            <h1>{titles[nav][0]}</h1>
+            <h1>{titles[nav]}</h1>
             <div className="date">{dateStr}</div>
           </div>
           <div className="topctl">
@@ -217,7 +227,7 @@ function CaseloadView({ elders, lang, onOpen }) {
 function VisitsView({ visits, elders, lang, onOpen, onVisit }) {
   return (
     <div className="content" style={{ maxWidth: 760 }}>
-      <div className="card vpanel" style={{ padding: 8 }}>
+      <div className="vpanel" style={{ padding: 8 }}>
         {visits.map(v => {
           const e = v.elder || elders.find(x => x.id === v.elder_id) || {}
           const time = v.scheduled_at ? new Date(v.scheduled_at).toLocaleTimeString('en-HK', { hour: '2-digit', minute: '2-digit' }) : '—'
@@ -231,7 +241,7 @@ function VisitsView({ visits, elders, lang, onOpen, onVisit }) {
               </div>
               {v.state === 'due' && <Pill kind="risk" dot={false}>{L(lang,'Due now','即將')}</Pill>}
               <button className="btn primary" onClick={ev => { ev.stopPropagation(); onVisit(v.elder_id) }}
-                style={{ padding: '8px 14px', fontSize: 14 }}>{L(lang,'Start','開始')}</button>
+                style={{ padding: '8px 16px', fontSize: 14 }}>{L(lang,'Start','開始')}</button>
             </div>
           )
         })}
@@ -250,9 +260,9 @@ function AlertsView({ alerts, lang, onOpen, onReload }) {
   if (!alerts.length) return <SimpleNote lang={lang} title={L(lang,'All caught up','提示已全部處理')} body={L(lang,'No open flags.','沒有待處理提示。')} />
   return (
     <div className="content">
-      <div className="alerts">
+      <div className="alerts" style={{ borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
         {alerts.map(a => (
-          <div key={a.id} className={'alert card ' + a.severity} onClick={() => onOpen(a.elder_id)}>
+          <div key={a.id} className={'alert ' + a.severity} onClick={() => onOpen(a.elder_id)}>
             <div className="aic">{a.severity === 'risk' ? I.alert : I.bell}</div>
             <div className="atxt">
               <div className="atop">
@@ -264,7 +274,7 @@ function AlertsView({ alerts, lang, onOpen, onReload }) {
               </div>
               <div className="amsg">{a.label_en}</div>
             </div>
-            <button className="btn ghost" style={{ fontSize: 12, padding: '6px 12px', flexShrink: 0 }}
+            <button className="btn ghost" style={{ fontSize: 13, padding: '7px 14px', flexShrink: 0 }}
               onClick={ev => resolve(ev, a.id)}>{L(lang,'Resolve','解決')}</button>
           </div>
         ))}
@@ -276,14 +286,13 @@ function AlertsView({ alerts, lang, onOpen, onReload }) {
 function SimpleNote({ title, body }) {
   return (
     <div className="content">
-      <div className="card" style={{ padding: '40px 36px', textAlign: 'center', maxWidth: 520, margin: '24px auto' }}>
+      <div style={{ padding: '40px 32px', textAlign: 'center', maxWidth: 500, margin: '24px auto', background: '#fff', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
         <div style={{
-          width: 52, height: 52, borderRadius: 15, background: 'var(--green-tint)',
+          width: 52, height: 52, borderRadius: 14, background: 'var(--green-tint)',
           color: 'var(--green-ink)', display: 'grid', placeItems: 'center', margin: '0 auto 20px',
-          border: '1px solid var(--green-tint-2)'
         }}>{I.check}</div>
-        <h2 style={{ fontSize: 19, letterSpacing: '-0.015em' }}>{title}</h2>
-        <p style={{ color: 'var(--ink-soft)', fontSize: 14.5, lineHeight: 1.6, marginTop: 10 }}>{body}</p>
+        <h2 style={{ fontSize: 20, letterSpacing: '-0.025em' }}>{title}</h2>
+        <p style={{ color: 'var(--ink-soft)', fontSize: 15, lineHeight: 1.6, marginTop: 10 }}>{body}</p>
       </div>
     </div>
   )
