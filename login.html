@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CareBridge 康橋 — Sign in</title>
+<link rel="stylesheet" href="styles/system.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); display: flex; flex-direction: column; min-height: 100vh; }
+
+  .page {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 100vh;
+  }
+
+  /* ── Left panel (brand / info) ── */
+  .left {
+    background: var(--green-deep);
+    color: #fff;
+    padding: 60px 56px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .left .brand {
+    display: flex; align-items: center; gap: 12px;
+    font-weight: 800; font-size: 20px; letter-spacing: -0.02em; color: #fff;
+  }
+  .left .mark {
+    width: 34px; height: 34px; border-radius: 10px;
+    background: oklch(1 0 0 / 0.18);
+    display: grid; place-items: center;
+  }
+  .left .mark::before {
+    content: "";
+    width: 16px; height: 16px;
+    border: 2.8px solid #fff;
+    border-radius: 50% 50% 50% 2px;
+    transform: rotate(45deg);
+  }
+  .left .tagline {
+    font-size: 28px; font-weight: 800; letter-spacing: -0.025em;
+    line-height: 1.18; margin-top: 6px; color: #fff;
+  }
+  .left .tagline em { font-style: normal; color: oklch(0.85 0.12 158); }
+  .left .sub {
+    font-size: 15px; line-height: 1.6; color: oklch(1 0 0 / 0.72);
+    margin-top: 18px; max-width: 38ch;
+  }
+
+  .left .roles { display: flex; flex-direction: column; gap: 14px; margin-top: 40px; }
+  .role-chip {
+    display: flex; align-items: center; gap: 12px;
+    background: oklch(1 0 0 / 0.08); border-radius: 12px; padding: 14px 16px;
+  }
+  .role-chip .ri {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: oklch(1 0 0 / 0.14);
+    display: grid; place-items: center; flex: none;
+    font-size: 17px;
+  }
+  .role-chip .rtitle { font-weight: 700; font-size: 14px; color: #fff; }
+  .role-chip .rsub   { font-size: 12.5px; color: oklch(1 0 0 / 0.6); margin-top: 2px; }
+
+  /* ── Right panel (form) ── */
+  .right {
+    padding: 0 56px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .form-wrap { width: 100%; max-width: 400px; }
+
+  .form-wrap h1 { font-size: 26px; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .form-wrap .hint { color: var(--ink-soft); font-size: 14.5px; margin-bottom: 32px; }
+
+  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--ink); }
+  input[type=email], input[type=password] {
+    width: 100%; padding: 12px 14px; border-radius: 12px;
+    border: 1.5px solid var(--line); font-family: var(--sans); font-size: 15px;
+    background: var(--surface); color: var(--ink); box-sizing: border-box;
+    transition: border-color .15s;
+  }
+  input:focus { outline: none; border-color: var(--green); }
+  .field { margin-bottom: 18px; }
+
+  .err { color: var(--risk); font-size: 13px; margin-bottom: 16px; display: none; }
+  .err.show { display: block; }
+
+  .submit-btn {
+    width: 100%; padding: 14px; border-radius: 12px;
+    background: var(--green); color: #fff; border: none;
+    font-family: var(--sans); font-size: 16px; font-weight: 700;
+    cursor: pointer; transition: opacity .15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .demos {
+    margin-top: 28px; padding: 18px; background: var(--bg-sink);
+    border-radius: 12px; border: 1px solid var(--line-soft);
+  }
+  .demos .dl { font-family: var(--mono); font-size: 11.5px; color: var(--ink-faint);
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+  .demo-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 0; border-bottom: 1px solid var(--line-soft); cursor: pointer;
+  }
+  .demo-row:last-child { border: none; padding-bottom: 0; }
+  .demo-row:hover .dem { color: var(--green); }
+  .dem { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); transition: color .1s; }
+  .dpill { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; }
+  .dpill.worker { background: var(--watch-bg); color: var(--watch-ink); }
+  .dpill.family { background: var(--green-tint); color: var(--green-ink); }
+
+  /* ── Responsive: phone ── */
+  @media (max-width: 720px) {
+    .page { grid-template-columns: 1fr; }
+    .left {
+      padding: 36px 28px 32px;
+      min-height: auto;
+    }
+    .left .roles { display: none; }
+    .left .tagline { font-size: 22px; }
+    .right { padding: 36px 28px 48px; align-items: flex-start; }
+    .form-wrap { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <!-- Brand / info panel -->
+  <div class="left">
+    <div>
+      <div class="brand">
+        <span class="mark"></span> CareBridge <span style="font-weight:700;color:oklch(1 0 0/.6);font-size:16px">康橋</span>
+      </div>
+      <div class="tagline" style="margin-top:36px">
+        Keep discharged elders<br>well at <em>home</em>.
+      </div>
+      <p class="sub">One platform, three views. Sign in to reach your corner of the care loop.</p>
+    </div>
+
+    <div class="roles">
+      <div class="role-chip">
+        <div class="ri">🏥</div>
+        <div>
+          <div class="rtitle">Social Worker / Nurse</div>
+          <div class="rsub">Full caseload · risk triage · visit mode</div>
+        </div>
+      </div>
+      <div class="role-chip">
+        <div class="ri">💚</div>
+        <div>
+          <div class="rtitle">Family Member</div>
+          <div class="rsub">Your parent's daily update · gentle nudges</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sign-in form -->
+  <div class="right">
+    <div class="form-wrap">
+      <h1>Sign in</h1>
+      <p class="hint">You'll land in the right view automatically.</p>
+
+      <form id="loginForm">
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" type="email" required placeholder="you@carebridge.hk" autocomplete="username">
+        </div>
+        <div class="field">
+          <label for="pass">Password</label>
+          <input id="pass" type="password" required placeholder="••••••••" autocomplete="current-password">
+        </div>
+
+        <p id="errMsg" class="err"></p>
+
+        <button type="submit" class="submit-btn" id="submitBtn">
+          <span id="btnLabel">Sign in →</span>
+        </button>
+      </form>
+
+      <div class="demos">
+        <div class="dl">Demo accounts · password: hackathon123</div>
+        <div class="demo-row" onclick="fillDemo('karen@carebridge.hk')">
+          <span class="dem">karen@carebridge.hk</span>
+          <span class="dpill worker">Social Worker</span>
+        </div>
+        <div class="demo-row" onclick="fillDemo('family-wong@carebridge.hk')">
+          <span class="dem">family-wong@carebridge.hk</span>
+          <span class="dpill family">Family</span>
+        </div>
+        <div class="demo-row" onclick="fillDemo('family-chan@carebridge.hk')">
+          <span class="dem">family-chan@carebridge.hk</span>
+          <span class="dpill family">Family</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL  = 'https://waeoxrhjrdiwknlokiai.supabase.co'
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhZW94cmhqcmRpd2tubG9raWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzM1MzksImV4cCI6MjA5NjM0OTUzOX0.mGYykwWCbts4Yn55QdcIkTEtOp-XAZJh-v8AMT8R_R8'
+  const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+
+  // If already authed with a valid role, redirect immediately
+  _sb.auth.getSession().then(({ data }) => {
+    if (data.session) {
+      const role = data.session.user.user_metadata?.role
+      redirect(role)
+    }
+  })
+
+  function redirect(role) {
+    if (role === 'worker') {
+      window.location.href = 'Social Worker Dashboard.html'
+    } else if (role === 'family') {
+      window.location.href = 'Family App.html'
+    }
+  }
+
+  function fillDemo(email) {
+    document.getElementById('email').value = email
+    document.getElementById('pass').value = 'hackathon123'
+    document.getElementById('email').focus()
+  }
+
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const email = document.getElementById('email').value.trim()
+    const pass  = document.getElementById('pass').value
+    const errEl = document.getElementById('errMsg')
+    const btn   = document.getElementById('submitBtn')
+    const lbl   = document.getElementById('btnLabel')
+
+    errEl.classList.remove('show')
+    btn.disabled = true
+    lbl.textContent = 'Signing in…'
+
+    try {
+      const { data, error } = await _sb.auth.signInWithPassword({ email, password: pass })
+      if (error) throw error
+
+      const token = data.session.access_token
+      const role  = data.user.user_metadata?.role ?? 'family'
+      localStorage.setItem('cb_token', token)
+      localStorage.setItem('cb_role', role)
+
+      redirect(role)
+    } catch (err) {
+      errEl.textContent = err.message || 'Sign in failed. Check your credentials.'
+      errEl.classList.add('show')
+      btn.disabled = false
+      lbl.textContent = 'Sign in →'
+    }
+  })
+</script>
+</body>
+</html>
