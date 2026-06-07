@@ -1,6 +1,6 @@
 /* CareBridge — API + auth wrapper (no bundler, plain global JS) */
 
-const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3001' : ''
+const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '/_/backend'
 const SUPABASE_URL  = 'https://waeoxrhjrdiwknlokiai.supabase.co'
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhZW94cmhqcmRpd2tubG9raWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzM1MzksImV4cCI6MjA5NjM0OTUzOX0.mGYykwWCbts4Yn55QdcIkTEtOp-XAZJh-v8AMT8R_R8'
 
