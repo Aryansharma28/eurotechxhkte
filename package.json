@@ -12,6 +12,7 @@
     "test:checkin": "tsc && node dist/test-checkin.js"
   },
   "dependencies": {
+    "hono": "^4.7.10",
     "@mastra/core": "latest",
     "@mastra/voice-google-gemini-live": "^0.12.0",
     "@mastra/voice-openai-realtime": "latest",
