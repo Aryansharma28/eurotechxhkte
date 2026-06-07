@@ -129,17 +129,26 @@ function FamilyApp() {
     })
   }, [])
 
-  async function loadData() {
-    setLoading(true); setErr(null)
+  async function loadData(silent) {
+    if (!silent) { setLoading(true); setErr(null) }
     try {
       const d = await API.get("/api/family/elder")
       setData(d)
     } catch (e) {
-      setErr(e.message)
+      if (!silent) setErr(e.message)
     } finally {
-      setLoading(false); setChecking(false)
+      if (!silent) setLoading(false)
+      setChecking(false)
     }
   }
+
+  // Live: silently re-fetch every 5s while signed in, so a new check-in call
+  // shows up on the page without a manual refresh.
+  React.useEffect(() => {
+    if (!authed) return
+    const id = setInterval(() => loadData(true), 5000)
+    return () => clearInterval(id)
+  }, [authed])
 
   function handleLogin() { setAuthed(true); loadData() }
 
