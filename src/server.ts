@@ -4,6 +4,7 @@ import { voiceAgent } from './mastra/agent';
 import { PassThrough } from 'stream';
 import * as dotenv from 'dotenv';
 import twilio from 'twilio';
+import { processIncomingAudio } from './services/metrics';
 
 // Load environment variables
 dotenv.config();
@@ -114,6 +115,11 @@ app.ws('/media-stream', async (ws, req) => {
         const muLawBuffer = Buffer.from(data.media.payload, 'base64');
         const pcmBuffer = transcodeTwilioToGemini(muLawBuffer);
         inputStream.write(pcmBuffer);
+
+        // Process audio metrics asynchronously
+        processIncomingAudio(muLawBuffer).catch(err => {
+          console.error('[Metrics] Error processing audio chunk:', err);
+        });
       } else if (data.event === 'stop') {
         console.log(`[Twilio] Stream stopped.`);
         ws.close();
