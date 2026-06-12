@@ -44,3 +44,5 @@ Warm neutrals + a green health accent; amber/red reserved strictly for triage so
 > The landing page is fully offline-capable (HTML/CSS only, aside from web fonts). The sub-prototypes pull React + Babel from a CDN, so they need network the first load.
 
 _Generated from a [Claude Design](https://claude.ai/design) handoff bundle._
+
+Hello from Langy
